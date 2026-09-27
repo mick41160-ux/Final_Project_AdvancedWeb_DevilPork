@@ -1,0 +1,65 @@
+CREATE TABLE IF NOT EXISTS CUSTOMERS (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    latitude DECIMAL(10, 7) NOT NULL,
+    longitude DECIMAL(10, 7) NOT NULL,
+    INDEX idx_customers_name (first_name, last_name),
+    INDEX idx_customers_phone (phone)
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS ORDERS (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    customer_id BIGINT UNSIGNED NOT NULL,
+    box_count TINYINT UNSIGNED NOT NULL,
+    status ENUM(
+        'pending',
+        'ready',
+        'assigned',
+        'delivered',
+        'cancelled'
+    ) NOT NULL DEFAULT 'pending',
+    ordered_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (customer_id) REFERENCES CUSTOMERS (id) ON DELETE CASCADE,
+    CONSTRAINT chk_orders_box_count CHECK (box_count BETWEEN 1 AND 3)
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS ROUTING_RUNS (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    status ENUM(
+        'draft',
+        'committed',
+        'superseded'
+    ) NOT NULL DEFAULT 'draft',
+    planned_departure DATETIME NOT NULL
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS RIDERS (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    display_name VARCHAR(120) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    is_available BOOLEAN NOT NULL DEFAULT TRUE
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS ROUTES (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    routing_run_id BIGINT UNSIGNED NOT NULL,
+    rider_id BIGINT UNSIGNED NULL,
+    distance_km DECIMAL(9, 3) NOT NULL,
+    job_code_hash CHAR(64) NULL UNIQUE,
+    FOREIGN KEY (routing_run_id) REFERENCES ROUTING_RUNS (id) ON DELETE CASCADE,
+    FOREIGN KEY (rider_id) REFERENCES RIDERS (id) ON DELETE SET NULL
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS ROUTE_STOPS (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    route_id BIGINT UNSIGNED NOT NULL,
+    order_id BIGINT UNSIGNED NOT NULL UNIQUE,
+    stop_sequence TINYINT UNSIGNED NOT NULL,
+    estimated_arrival_at DATETIME NOT NULL,
+    FOREIGN KEY (route_id) REFERENCES ROUTES (id) ON DELETE CASCADE,
+    FOREIGN KEY (order_id) REFERENCES ORDERS (id) ON DELETE CASCADE,
+    CONSTRAINT chk_stop_sequence CHECK (stop_sequence BETWEEN 1 AND 3)
+) ENGINE = InnoDB;
