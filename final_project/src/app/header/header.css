@@ -1,0 +1,38 @@
+.logo-img {
+  height: 90px; /* กำหนดความสูงตามความเหมาะสม */
+  width: auto;  /* ให้ความกว้างปรับอัตโนมัติรูปจะได้ไม่เบี้ยว */
+  
+}
+.tab-container {
+  display: flex;
+  gap: 10px;
+  width: 100%  ;
+}
+
+button {
+  padding: 10px 20px;
+  border: 1px solid rgb(177, 233, 255);
+  background-color: rgb(255, 255, 255);
+  cursor: pointer;
+  width: 100%;
+}
+
+/* คลาสที่ถูกเติมให้อัตโนมัติเมื่ออยู่หน้านั้นๆ */
+button.active {
+  background-color: #cbe3fd;
+  color: rgb(0, 0, 0);
+  border-color: #007bff;
+}
+.shadow-sm {
+    --tw-shadow: 0 1px 3px 0 var(--tw-shadow-color, rgb(0 0 0 / 0.1)), 0 1px 2px -1px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+}
+@property --tw-shadow {
+    syntax: "*";
+    inherits: false;
+    initial-value: 0 0 #0000;
+}
+@property --tw-shadow-color {
+    syntax: "*";
+    inherits: false;
+}
