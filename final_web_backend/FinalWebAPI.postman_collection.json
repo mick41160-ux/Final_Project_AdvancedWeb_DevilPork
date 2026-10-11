@@ -1,0 +1,105 @@
+{
+  "info": {
+    "_postman_id": "8d6a5b2e-0d53-4f5c-9d61-6f4f8d8f9a10",
+    "name": "Final Web Project API",
+    "description": "Postman collection สำหรับทดสอบ Final Web Project API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://finalwebprojectapi.vercel.app"
+    },
+    {
+      "key": "customerId",
+      "value": "1"
+    },
+    {
+      "key": "orderId",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/health"
+      }
+    },
+    {
+      "name": "Customers",
+      "item": [
+        {
+          "name": "Get all customers",
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/customer" }
+        },
+        {
+          "name": "Get customer by id",
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/customer/{{customerId}}" }
+        },
+        {
+          "name": "Search customers",
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/customer?name=สมชาย" }
+        },
+        {
+          "name": "Nearby customers",
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/customer/nearby?latitude=16.2435&longitude=103.2542" }
+        },
+        {
+          "name": "Create customer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"first_name\": \"สมชาย\",\n  \"last_name\": \"ใจดี\",\n  \"phone\": \"0812345678\",\n  \"address\": \"หอพัก A มมส.\",\n  \"latitude\": 16.2435,\n  \"longitude\": 103.2542\n}" },
+            "url": "{{baseUrl}}/api/customer"
+          }
+        },
+        {
+          "name": "Update customer",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"first_name\": \"สมชาย\",\n  \"last_name\": \"ใจดีมาก\",\n  \"phone\": \"0812345678\",\n  \"address\": \"หอพัก B มมส.\",\n  \"latitude\": 16.244,\n  \"longitude\": 103.255\n}" },
+            "url": "{{baseUrl}}/api/customer/{{customerId}}"
+          }
+        },
+        {
+          "name": "Delete customer",
+          "request": { "method": "DELETE", "header": [], "url": "{{baseUrl}}/api/customer/{{customerId}}" }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        { "name": "Get all orders", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/order" } },
+        { "name": "Nearby orders", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/order/nearby?latitude=16.2435&longitude=103.2542" } },
+        {
+          "name": "Create order",
+          "request": {
+            "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"customer_id\": 1,\n  \"box_count\": 2\n}" },
+            "url": "{{baseUrl}}/api/order"
+          }
+        },
+        {
+          "name": "Update order",
+          "request": {
+            "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"assigned\",\n  \"box_count\": 2\n}" },
+            "url": "{{baseUrl}}/api/order/{{orderId}}"
+          }
+        },
+        { "name": "Delete order", "request": { "method": "DELETE", "header": [], "url": "{{baseUrl}}/api/order/{{orderId}}" } }
+      ]
+    },
+    {
+      "name": "Riders",
+      "item": [
+        { "name": "Get riders", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/rider" } }
+      ]
+    }
+  ]
+}
