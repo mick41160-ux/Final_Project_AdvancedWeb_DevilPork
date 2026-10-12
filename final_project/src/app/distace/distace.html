@@ -1,0 +1,351 @@
+<div class="flex flex-col gap-3 min-h-screen w-full overflow-y-auto p-4 bg-gray-100">
+    <p class="text-[40px] font-bold">จัดเส้นทางจัดส่ง</p>
+    <p class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+        วางแผนอย่างมั่นใจ ส่งทันมื้อเที่ยง
+    </p>
+
+    <div
+        class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 bg-white p-5 rounded-lg shadow-md w-full">
+        <div class="max-w-md">
+            <p class="text-sm font-bold">เงื่อนไขการจัดเส้นทาง</p>
+            <p class="text-left text-xs font-medium text-gray-500 tracking-wider mt-1">
+                ใช้พิกัด จำนวนกล่อง และไรเดอร์ที่พร้อมรับงานจริงจากข้อมูลปัจจุบัน.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full lg:w-auto">
+            <div class="flex flex-col gap-1">
+                <label class="text-xs font-medium text-gray-600">เป้าหมาย</label>
+                <div class="relative">
+                    <select
+                        class="w-full appearance-none border rounded px-3 py-1.5 pr-8 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        <option>ลดค่าจัดส่ง</option>
+                    </select>
+                    <svg class="w-4 h-4 absolute right-2 top-2 pointer-events-none text-gray-500"
+                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="text-xs font-medium text-gray-600">ความเร็ว (กม./ชม.)</label>
+                <input type="text" value="30"
+                    class="border rounded px-3 py-1.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-blue-500">
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="text-xs font-medium text-gray-600">เวลาแวะส่ง (นาที/จุด)</label>
+                <input type="text" value="4"
+                    class="border rounded px-3 py-1.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-blue-500">
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="text-xs font-medium text-gray-600">เวลาออกส่ง</label>
+                <div class="relative">
+                    <select
+                        class="w-full appearance-none border rounded px-3 py-1.5 pr-8 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        <option>11:30</option>
+                    </select>
+                    <svg class="w-4 h-4 absolute right-2 top-2 pointer-events-none text-gray-500"
+                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </div>
+            </div>
+            <div class="col-span-2 sm:row-span-1 flex flex-wrap items-center gap-2.5">
+                <button type="button"
+                    class="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200 bg-gray-50/80 text-gray-600 text-xs font-medium hover:bg-gray-100 active:bg-gray-200 transition shadow-sm">
+                    <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                    <span>เปรียบเทียบแผน</span>
+                </button>
+
+                <button type="button"
+                    class="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-600 text-xs font-medium hover:bg-gray-50 active:bg-gray-100 transition shadow-sm">
+                    <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    <span>คำนวณใหม่</span>
+                </button>
+
+                <button type="button"
+                    class="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 active:bg-blue-800 transition shadow-sm">
+                    <svg class="w-3.5 h-3.5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                    </svg>
+                    <span>คำนวณเส้นทาง</span>
+                </button>
+
+                <button type="button"
+                    class="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#1a2b4c] text-white text-xs font-medium hover:bg-[#111e36] active:bg-[#0a1324] transition shadow-sm">
+                    <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>ยืนยันแผนจัดส่ง</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex flex-row space-between gap-5 mt-5 h-180 ">
+        <div class="flex flex-col bg-white rounded-lg shadow-md p-5 w-300 h-full">
+            <p class="text-[11.99px]">ภาพรวมพื้่นที่ที่ต้องจัดส่ง</p>
+            <p class="text-[10px] font-light text-gray-400">มหาวิทยาลัยมหาสารคามและพื้นที่ใกล้เคียง</p>
+
+            <div class="relative w-full h-full bg-stone-100 rounded-lg overflow-hidden border border-gray-200">
+                <div id="routeMap" class="w-full h-full z-0"></div>
+
+                <div class="absolute bottom-3 right-3 text-[10px] text-gray-500 font-mono">
+                    0 ──── 500 ม.
+                </div>
+            </div>
+        </div>
+        <div class="flex flex-col bg-white rounded-lg shadow-md p-5 w-90 h-full">
+            <p class="text-[20px]">สรุปแผนจัดส่ง </p>
+            <div class="bg-white p-5 rounded-lg shadow-md w-full max-w-sm h-full">
+                <div class="grid grid-cols-2 gap-4 mb-5">
+                    <div>
+                        <p class="text-xs font-medium text-gray-500 mb-1">ไรเดอร์ที่ใช้</p>
+                        <div class="flex items-baseline gap-1">
+                            <span class="text-2xl font-bold text-gray-900">8</span>
+                            <span class="text-xs text-gray-400">คน</span>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium text-gray-500 mb-1">ออเดอร์ที่จัด</p>
+                        <div class="flex items-baseline gap-1">
+                            <span class="text-2xl font-bold text-[#1a2b4c]">24</span>
+                            <span class="text-xs text-gray-400">/ 24</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-3 text-xs">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500">ระยะทางรวม</span>
+                        <span class="font-semibold text-gray-800">14.7 กม.</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500">คาดว่าจะส่งครบ</span>
+                        <span class="font-semibold text-gray-800">11:47 น.</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500">ออเดอร์ยังไม่จัด</span>
+                        <span class="font-semibold text-gray-800">0</span>
+                    </div>
+                </div>
+
+                <div class="my-4 border-t border-gray-100"></div>
+
+                <div class="space-y-3 text-xs">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500">รายรับทั้งหมด</span>
+                        <span class="font-semibold text-gray-800">฿3,120</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500">ต้นทุนอาหาร</span>
+                        <span class="font-semibold text-gray-800">฿1,920</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500">ค่าจัดส่งประมาณการ</span>
+                        <span class="font-semibold text-gray-800">฿259</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="mt-8 w-full">
+
+        <div class="flex justify-between items-center mb-4 px-1">
+            <h3 class="text-base font-bold text-gray-800">เส้นทางของไรเดอร์</h3>
+            <span class="text-xs text-gray-400">สูงสุด 3 ออเดอร์ต่อคนต่อรอบ</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+
+            <div
+                class="bg-white rounded-xl shadow-md border-t-4 p-5 flex flex-col justify-between border-x border-b border-gray-100 hover:shadow-lg transition">
+                <div>
+                    <div class="flex items-center justify-between pb-4 border-b border-gray-50">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 font-bold flex items-center justify-center text-sm">
+                                ส
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-gray-800">สมชาย ใจดี</p>
+                                <p class="text-[11px] text-gray-400">R-001 · 3 ออเดอร์</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="my-4 space-y-3.5">
+                        <div class="flex items-start gap-3">
+                            <span
+                                class="w-5 h-5 rounded-full bg-blue-500 text-white font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">1</span>
+                            <div class="text-xs">
+                                <p class="font-medium text-gray-800">หอพักศรีสุข · ท่าขอนยาง</p>
+                                <p class="text-[11px] text-gray-400 mt-0.5">สุภาวดี แก้วใส 17 · 2 กล่อง</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span
+                                class="w-5 h-5 rounded-full bg-blue-500 text-white font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">2</span>
+                            <div class="text-xs">
+                                <p class="font-medium text-gray-800">อาคารเรียนรวม มมส.</p>
+                                <p class="text-[11px] text-gray-400 mt-0.5">ภัทรพล ทองดี · 3 กล่อง</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span
+                                class="w-5 h-5 rounded-full bg-blue-500 text-white font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">3</span>
+                            <div class="text-xs">
+                                <p class="font-medium text-gray-800">หอพักริมคลอง · ขามเรียง</p>
+                                <p class="text-[11px] text-gray-400 mt-0.5">ณัฐธิดา วงศ์คำ · 3 กล่อง</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div
+                        class="pt-3 border-t border-gray-100 flex justify-between items-center text-xs text-gray-500 font-medium mb-3">
+                        <span>2.06 กม.</span>
+                        <span>16.1 นาที</span>
+                        <span class="font-bold text-gray-800">฿41</span>
+                    </div>
+                    <button type="button"
+                        class="w-full border border-gray-200 rounded-lg py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 transition flex items-center justify-center gap-1">
+                        <span>ดูลำดับส่งและวิธีคิดค่าใช้จ่าย</span>
+                        <span>→</span>
+                    </button>
+                </div>
+            </div>
+
+            <div
+                class="bg-white rounded-xl shadow-md border-t-4 p-5 flex flex-col justify-between border-x border-b border-gray-100 hover:shadow-lg transition">
+                <div>
+                    <div class="flex items-center justify-between pb-4 border-b border-gray-50">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 font-bold flex items-center justify-center text-sm">
+                                ว
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-gray-800">วิชัย บุญมี</p>
+                                <p class="text-[11px] text-gray-400">R-002 · 3 ออเดอร์</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="my-4 space-y-3.5">
+                        <div class="flex items-start gap-3">
+                            <span
+                                class="w-5 h-5 rounded-full bg-emerald-500 text-white font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">1</span>
+                            <div class="text-xs">
+                                <p class="font-medium text-gray-800">หอพักศรีสุข · ท่าขอนยาง</p>
+                                <p class="text-[11px] text-gray-400 mt-0.5">สุภาวดี แก้วใส 11 · 2 กล่อง</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span
+                                class="w-5 h-5 rounded-full bg-emerald-500 text-white font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">2</span>
+                            <div class="text-xs">
+                                <p class="font-medium text-gray-800">คณะวิศวกรรมศาสตร์ มมส.</p>
+                                <p class="text-[11px] text-gray-400 mt-0.5">กิตติพงษ์ บุญมา 22 · 1 กล่อง</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span
+                                class="w-5 h-5 rounded-full bg-emerald-500 text-white font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">3</span>
+                            <div class="text-xs">
+                                <p class="font-medium text-gray-800">คณะวิทยาการสารสนเทศ มมส.</p>
+                                <p class="text-[11px] text-gray-400 mt-0.5">รนกฤต ศรีสุข 14 · 2 กล่อง</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div
+                        class="pt-3 border-t border-gray-100 flex justify-between items-center text-xs text-gray-500 font-medium mb-3">
+                        <span>2.31 กม.</span>
+                        <span>16.6 นาที</span>
+                        <span class="font-bold text-gray-800">฿32</span>
+                    </div>
+                    <button type="button"
+                        class="w-full border border-gray-200 rounded-lg py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 transition flex items-center justify-center gap-1">
+                        <span>ดูลำดับส่งและวิธีคิดค่าใช้จ่าย</span>
+                        <span>→</span>
+                    </button>
+                </div>
+            </div>
+            <div
+                class="bg-white rounded-xl shadow-md border-t- p-5 flex flex-col justify-between border-x border-b border-gray-100 hover:shadow-lg transition">
+                <div>
+                    <div class="flex items-center justify-between pb-4 border-b border-gray-50">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-10 h-10 rounded-full bg-rose-100 text-rose-600 font-bold flex items-center justify-center text-sm">
+                                อ
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-gray-800">อานนท์ สีทอง</p>
+                                <p class="text-[11px] text-gray-400">R-003 · 3 ออเดอร์</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="my-4 space-y-3.5">
+                        <div class="flex items-start gap-3">
+                            <span
+                                class="w-5 h-5 rounded-full bg-rose-500 text-white font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">1</span>
+                            <div class="text-xs">
+                                <p class="font-medium text-gray-800">หอพักริมคลอง · ขามเรียง</p>
+                                <p class="text-[11px] text-gray-400 mt-0.5">ณัฐธิดา วงศ์คำ 9 · 3 กล่อง</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span
+                                class="w-5 h-5 rounded-full bg-rose-500 text-white font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">2</span>
+                            <div class="text-xs">
+                                <p class="font-medium text-gray-800">หอพักบ้านสวน · ท่าขอนยาง</p>
+                                <p class="text-[11px] text-gray-400 mt-0.5">พิมพ์ชนก ใจดี 19 · 1 กล่อง</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span
+                                class="w-5 h-5 rounded-full text-white font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">3</span>
+                            <div class="text-xs">
+                                <p class="font-medium text-gray-800">คณะวิทยาการสารสนเทศ มมส.</p>
+                                <p class="text-[11px] text-gray-400 mt-0.5">รนกฤต ศรีสุข 8 · 2 กล่อง</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div
+                        class="pt-3 border-t border-gray-100 flex justify-between items-center text-xs text-gray-500 font-medium mb-3">
+                        <span>1.50 กม.</span>
+                        <span>15.0 นาที</span>
+                        <span class="font-bold text-gray-800">฿29</span>
+                    </div>
+                    <button type="button"
+                        class="w-full border border-gray-200 rounded-lg py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 transition flex items-center justify-center gap-1">
+                        <span>ดูลำดับส่งและวิธีคิดค่าใช้จ่าย</span>
+                        <span>→</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
