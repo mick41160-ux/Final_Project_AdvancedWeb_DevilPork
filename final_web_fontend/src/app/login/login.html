@@ -15,8 +15,8 @@
         @if (submitted && !password) { <small class="error">กรุณากรอกรหัสผ่าน</small> }
         <button class="submit" type="submit">เข้าสู่ระบบร้านค้า</button>
       } @else {
-        <label for="orderNumber">เลขออเดอร์</label><input id="orderNumber" name="orderNumber" type="text" [(ngModel)]="orderNumber" placeholder="เช่น 001" autocomplete="off" [class.invalid]="submitted && !orderNumber" required />
-        @if (submitted && !orderNumber) { <small class="error">กรุณากรอกเลขออเดอร์</small> }
+        <label for="orderNumber">เลขไรเดอร์</label><input id="riderId" name="riderId" type="text" [(ngModel)]="riderId" placeholder="เช่น 001" autocomplete="off" [class.invalid]="submitted && !riderId" required />
+        @if (submitted && !riderId) { <small class="error">กรุณากรอกเลขออเดอร์</small> }
         <button class="submit" type="submit">ค้นหาออเดอร์</button>
       }
     </form>

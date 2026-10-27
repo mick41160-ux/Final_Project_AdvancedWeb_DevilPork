@@ -44,7 +44,7 @@ export interface PlanStop {
   longitude: number;
   box_count: number;
   stop_sequence: number;
-  estimated_arrival_at: string; // "YYYY-MM-DD HH:mm:ss"
+  estimated_arrival_at: string;
   distance_from_previous_km: number;
 }
 
@@ -58,7 +58,7 @@ export interface PlanRoute {
   estimated_minutes: number;
   estimated_arrival_at: string;
   distance_source: 'road' | 'straight';
-  geometry: [number, number][]; // [lat, lng] polyline ตามถนนจริง (ครัว -> จุดสุดท้าย)
+  geometry: [number, number][];
   stops: PlanStop[];
 }
 
@@ -83,7 +83,7 @@ export interface RoutingPlan {
     total_distance_km: number;
     estimated_finish_at: string;
     meets_deadline: boolean;
-    fallback_count: number; // เส้นทางที่ OSRM ล้มเหลวและใช้เส้นตรงแทน
+    fallback_count: number;
     revenue: number;
     food_cost: number;
     delivery_cost: number;
@@ -92,11 +92,17 @@ export interface RoutingPlan {
   routes: PlanRoute[];
 }
 
-// Set API_URL in the active Angular build configuration to point at another API.
+export interface LatestRoutingPlan {
+  active_plan: {
+    routes: Array<{
+      rider_id: number | null;
+      stops: Array<{ order_id: number; stop_sequence: number }>;
+    }>;
+  } | null;
+}
+
 import { environment } from '../environments/environment';
 
-// A runtime override is useful when one compiled frontend is deployed to
-// multiple environments without rebuilding it.
 declare global {
   interface Window {
     __APP_CONFIG__?: { apiUrl?: string };
@@ -115,12 +121,24 @@ export class ApiService {
     return this.http.get<Customer[]>(`${API_URL}/api/customer`);
   }
 
+  updateCustomer(id: number, customer: Omit<Customer, 'id'>): Observable<{ affected_rows: number }> {
+    return this.http.put<{ affected_rows: number }>(`${API_URL}/api/customer/${id}`, customer);
+  }
+
+  deleteCustomer(id: number): Observable<{ affected_rows: number }> {
+    return this.http.delete<{ affected_rows: number }>(`${API_URL}/api/customer/${id}`);
+  }
+
   getOrders(): Observable<DeliveryOrder[]> {
     return this.http.get<DeliveryOrder[]>(`${API_URL}/api/order`);
   }
 
   getRiders(): Observable<Rider[]> {
     return this.http.get<Rider[]>(`${API_URL}/api/rider`);
+  }
+
+  getLatestRoutingPlan(): Observable<LatestRoutingPlan> {
+    return this.http.get<LatestRoutingPlan>(`${API_URL}/api/routing/latest`);
   }
 
   updateOrder(id: number, update: Partial<Pick<DeliveryOrder, 'status' | 'box_count'>>): Observable<{ affected_rows: number }> {
@@ -137,6 +155,18 @@ export class ApiService {
     stopMinutes?: number,
   ): Observable<{ active_plan: RoutingPlan }> {
     return this.http.post<{ active_plan: RoutingPlan }>(`${API_URL}/api/routing/calculate`, {
+      planned_departure: plannedDeparture,
+      speed_kmh: speedKmh,
+      stop_minutes: stopMinutes,
+    });
+  }
+
+  commitRoute(
+    plannedDeparture: string,
+    speedKmh?: number,
+    stopMinutes?: number,
+  ): Observable<{ active_plan: RoutingPlan }> {
+    return this.http.post<{ active_plan: RoutingPlan }>(`${API_URL}/api/routing/commit`, {
       planned_departure: plannedDeparture,
       speed_kmh: speedKmh,
       stop_minutes: stopMinutes,

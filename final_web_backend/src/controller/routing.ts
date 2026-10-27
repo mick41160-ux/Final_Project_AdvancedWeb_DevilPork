@@ -16,13 +16,12 @@ const FOOD_COST_PER_BOX = 40;
 const DEFAULT_SPEED_KMH = 30;
 const DEFAULT_STOP_MINUTES = 4;
 const MAX_STOPS_PER_RIDER = 3;
-// tried in order; the next one is used if the previous fails
 const OSRM_URLS = [
   "https://router.project-osrm.org/route/v1/driving",
   "https://routing.openstreetmap.de/routed-car/route/v1/driving",
 ];
 
-type LatLng = [number, number]; // [lat, lng]
+type LatLng = [number, number];
 
 interface ReadyOrder extends RowDataPacket {
   id: number;
@@ -67,7 +66,7 @@ interface RoutePlan {
   estimated_minutes: number;
   estimated_arrival_at: string;
   distance_source: "road" | "straight";
-  geometry: LatLng[]; // road-following polyline (depot -> last stop)
+  geometry: LatLng[];
   stops: StopPlan[];
 }
 
@@ -77,7 +76,6 @@ interface PlanParams {
   stop_minutes?: unknown;
 }
 
-/* ---------- distance helpers ---------- */
 
 function distanceKm(
   a: { latitude: number; longitude: number },
@@ -96,7 +94,6 @@ function distanceKm(
 
 const roadCache = new Map<string, { geometry: LatLng[]; legsKm: number[] }>();
 
-/** Ask OSRM for road geometry + per-leg distance (cached by coordinates). */
 async function roadRoute(points: LatLng[]) {
   const coords = points.map(([lat, lng]) => `${lng},${lat}`).join(";");
   const cached = roadCache.get(coords);
@@ -142,7 +139,6 @@ async function roadRoute(points: LatLng[]) {
   throw lastError;
 }
 
-/* ---------- time helpers ---------- */
 
 function parseDeparture(
   value: unknown,
@@ -176,9 +172,7 @@ function formatDateTime(date: string, minutes: number): string {
   return `${day.toISOString().slice(0, 10)} ${String(Math.floor(timeOfDay / 60)).padStart(2, "0")}:${String(timeOfDay % 60).padStart(2, "0")}:00`;
 }
 
-/* ---------- planning ---------- */
 
-/** Step 1: decide who delivers what, and in which order (nearest-neighbour). */
 function assignOrders(orders: ReadyOrder[], riders: AvailableRider[]) {
   const unassigned = [...orders];
   const assignments: { rider: AvailableRider; orders: ReadyOrder[] }[] = [];
@@ -210,7 +204,6 @@ function assignOrders(orders: ReadyOrder[], riders: AvailableRider[]) {
   return assignments;
 }
 
-/** Step 2: real road distance (fallback: straight line), arrival times, cost. */
 async function buildRoute(
   rider: AvailableRider,
   orders: ReadyOrder[],
@@ -323,7 +316,6 @@ async function calculatePlan(params: PlanParams = {}) {
   for (const a of assignments) {
     const route = await buildRoute(a.rider, a.orders, departure, speedKmh, stopMinutes);
     routes.push(route);
-    // เพิ่มการหน่วงเวลา 500 มิลลิวินาที เพื่อไม่ให้เซิร์ฟเวอร์ OSRM สาธารณะแบนการเชื่อมต่อ
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
 
@@ -386,7 +378,6 @@ async function calculatePlan(params: PlanParams = {}) {
   };
 }
 
-/* ---------- endpoints ---------- */
 
 router.get("/latest", async (_req, res) => {
   try {
@@ -418,7 +409,9 @@ router.get("/latest", async (_req, res) => {
     }
     const fullRoutes = routes.map((route) => ({
       ...route,
-      stops: stops.filter((stop) => Number(stop.route_id) === Number(route.id)),
+      stops: stops
+        .filter((stop) => Number(stop.route_id) === Number(route.id))
+        .map((stop, index) => ({ ...stop, stop_sequence: index + 1 })),
     }));
     res.json({ active_plan: { ...run, routes: fullRoutes } });
   } catch (error: any) {

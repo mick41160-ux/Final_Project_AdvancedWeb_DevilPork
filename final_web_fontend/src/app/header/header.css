@@ -1,6 +1,6 @@
 .logo-img {
-  height: 90px; /* กำหนดความสูงตามความเหมาะสม */
-  width: auto;  /* ให้ความกว้างปรับอัตโนมัติรูปจะได้ไม่เบี้ยว */
+  height: 90px;
+  width: auto;
   
 }
 .tab-container {
@@ -17,7 +17,6 @@ button {
   width: 100%;
 }
 
-/* คลาสที่ถูกเติมให้อัตโนมัติเมื่ออยู่หน้านั้นๆ */
 button.active {
   background-color: #cbe3fd;
   color: rgb(0, 0, 0);

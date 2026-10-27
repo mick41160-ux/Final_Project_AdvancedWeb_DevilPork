@@ -3,7 +3,6 @@ import {StoreComponent} from './store/store';
 import {RiderComponent} from './rider/rider';
 import {Order} from './order/order';
 import {Mgrider} from './mgrider/mgrider';
-import {Porp} from './porp/porp';
 import {Distace} from './distace/distace';
 import {Login} from './login/login';
 
@@ -15,6 +14,5 @@ export const routes: Routes = [
   { path: 'order', component: Order},
   { path: 'mgrider', component: Mgrider},
   { path: 'distace', component: Distace},
-  { path: 'prop', component: Porp}
   
 ];

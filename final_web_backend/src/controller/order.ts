@@ -137,14 +137,33 @@ router.put("/:id", async (req, res) => {
 });
 
 router.delete("/:id", async (req, res) => {
+  let connection: Awaited<ReturnType<typeof conn.getConnection>> | undefined;
   try {
-    const [result] = await conn.query("DELETE FROM ORDERS WHERE id=?", [
+    connection = await conn.getConnection();
+    await connection.beginTransaction();
+    const [stopRows] = await connection.query<any[]>(
+      "SELECT route_id, stop_sequence FROM ROUTE_STOPS WHERE order_id = ?",
+      [req.params.id],
+    );
+    const [result] = await connection.query("DELETE FROM ORDERS WHERE id=?", [
       req.params.id,
     ]);
-    if (!(result as any).affectedRows)
+    if (!(result as any).affectedRows) {
+      await connection.rollback();
       return res.status(404).json({ error: "Order not found" });
+    }
+    for (const stop of stopRows) {
+      await connection.query(
+        "UPDATE ROUTE_STOPS SET stop_sequence = stop_sequence - 1 WHERE route_id = ? AND stop_sequence > ?",
+        [stop.route_id, stop.stop_sequence],
+      );
+    }
+    await connection.commit();
     res.json({ affected_rows: (result as any).affectedRows });
   } catch {
+    await connection?.rollback();
     res.status(500).json({ error: "Database error" });
+  } finally {
+    connection?.release();
   }
 });

@@ -6,7 +6,6 @@ import * as L from 'leaflet';
 
 type LatLng = [number, number];
 
-// ฟังก์ชัน Fallback สำหรับดึงข้อมูลถนนจริงจาก OSRM
 async function getRoadGeometry(points: LatLng[]): Promise<LatLng[]> {
   if (points.length < 2) return points;
   const coords = points.map(p => `${p[1]},${p[0]}`).join(';');
@@ -67,7 +66,6 @@ export class StoreComponent implements AfterViewInit, OnDestroy {
     try {
       const depot: LatLng = [16.2468, 103.2514];
       
-      // วาดรัศมี 3 กิโลเมตร
       L.circle(depot, {
         color: '#94a3b8',
         fillColor: '#cbd5e1',
@@ -92,7 +90,6 @@ export class StoreComponent implements AfterViewInit, OnDestroy {
         
         let geom: LatLng[] = r.geometry?.length ? r.geometry : waypoints;
 
-        // --- เพิ่ม Fallback ดึงถนนจริง ---
         if (r.distance_source === 'straight' || geom.length === waypoints.length) {
           geom = await getRoadGeometry(waypoints);
         }

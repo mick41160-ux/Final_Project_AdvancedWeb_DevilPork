@@ -4,22 +4,21 @@ import { firstValueFrom } from 'rxjs';
 import * as L from 'leaflet';
 import { ApiService, PlanRoute, PlanStop } from '../api.service';
 
-type LatLng = [number, number]; // [lat, lng]
+type LatLng = [number, number];
 
 const DEPOT: LatLng = [16.2468, 103.2514];
 
-/** One colour per rider, picked to stay apart from each other on the OSM tiles. */
 export const RIDER_COLORS = [
-  '#2563eb', // blue
-  '#059669', // emerald
-  '#e11d48', // rose
-  '#d97706', // amber
-  '#7c3aed', // violet
-  '#0891b2', // cyan
-  '#c026d3', // fuchsia
-  '#65a30d', // lime
-  '#475569', // slate
-  '#ea580c', // orange
+  '#2563eb',
+  '#059669',
+  '#e11d48',
+  '#d97706',
+  '#7c3aed',
+  '#0891b2',
+  '#c026d3',
+  '#65a30d',
+  '#475569',
+  '#ea580c',
 ];
 
 export interface RiderView {
@@ -29,7 +28,7 @@ export interface RiderView {
   color: string;
   boxCount: number;
   stops: PlanStop[];
-  geometry: LatLng[]; // road-following polyline (depot -> last stop)
+  geometry: LatLng[];
   legsKm: number[];
   source: 'road' | 'straight';
   roadKm: number;
@@ -39,7 +38,6 @@ export interface RiderView {
   stopViews: { stop: PlanStop; km: number; arrival: string }[];
 }
 
-// ---- map-drawing helpers only (no business calculation) ----
 function haversineKm(a: LatLng, b: LatLng): number {
   const rad = (d: number) => (d * Math.PI) / 180;
   const dLat = rad(b[0] - a[0]);
@@ -59,25 +57,22 @@ function bearingDeg(a: LatLng, b: LatLng): number {
   return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
 }
 
-/** "2025-01-01 11:34:00" -> "11:34" */
 const clock = (dateTime: string) => dateTime.slice(11, 16);
 
 async function getRoadGeometry(points: LatLng[]): Promise<LatLng[]> {
   if (points.length < 2) return points;
   
-  // OSRM รับพิกัดสลับกันเป็น ลองจิจูด,ละติจูด (lng,lat)
   const coords = points.map(p => `${p[1]},${p[0]}`).join(';');
   try {
     const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`);
     const data = await res.json();
     if (data.code === 'Ok' && data.routes?.[0]?.geometry?.coordinates) {
-      // แปลงกลับเป็น [lat, lng] เพื่อให้ตรงกับชนิดข้อมูล LatLng ของเรา
       return data.routes[0].geometry.coordinates.map((c: number[]) => [c[1], c[0]] as LatLng);
     }
   } catch (e) {
     console.error('OSRM fallback routing failed', e);
   }
-  return points; // หากดึงไม่สำเร็จให้คืนค่าเส้นตรงกลับไป
+  return points;
 }
 
 @Component({
@@ -95,13 +90,13 @@ export class Distace implements AfterViewInit, OnDestroy {
   private requestId = 0;
   private debounce?: ReturnType<typeof setTimeout>;
 
-  // user inputs (sent to the backend)
   readonly speedKmh = signal(30);
   readonly stopMinutes = signal(4);
   readonly departure = signal('11:30');
 
-  // state
   readonly loading = signal(false);
+  readonly committing = signal(false);
+  readonly commitMessage = signal<string | null>(null);
   readonly error = signal<string | null>(null);
   readonly routes = signal<RiderView[]>([]);
   readonly summary = signal({
@@ -160,7 +155,6 @@ export class Distace implements AfterViewInit, OnDestroy {
     }
   }
 
-  /** Inputs now live on the server, so re-ask it (debounced). OSRM results are cached server-side. */
   private scheduleCalculate(): void {
     clearTimeout(this.debounce);
     this.debounce = setTimeout(() => void this.calculate(), 400);
@@ -172,7 +166,6 @@ export class Distace implements AfterViewInit, OnDestroy {
     if (!open) this.focusRider(riderId);
   }
 
-  /** Highlight one rider's route on the map and zoom to it; click again to reset. */
   focusRider(riderId: number): void {
     const map = this.map;
     if (!map) return;
@@ -197,11 +190,10 @@ export class Distace implements AfterViewInit, OnDestroy {
       const { active_plan: plan } = await firstValueFrom(
         this.api.calculateRoute(`${date} ${this.departure()}`, this.speedKmh(), this.stopMinutes()),
       );
-      if (ticket !== this.requestId) return; // a newer request superseded this one
+      if (ticket !== this.requestId) return;
 
       const views = plan.routes.map((r, i) => this.toView(r, i));
 
-      // --- เพิ่มส่วน Fallback ดึงเส้นทางถนนจริง ---
       for (const v of views) {
         if (v.source === 'straight' || v.geometry.length === v.stops.length + 1) {
           const waypoints: LatLng[] = [DEPOT, ...v.stops.map(s => [Number(s.latitude), Number(s.longitude)] as LatLng)];
@@ -209,13 +201,11 @@ export class Distace implements AfterViewInit, OnDestroy {
           
           v.geometry = roadGeom;
           
-          // ถ้าดึงถนนมาสำเร็จ (จุดเส้นทางเยอะกว่าจุดที่แวะส่ง) ให้เปลี่ยนสถานะเพื่อซ่อนคำเตือน
           if (roadGeom.length > waypoints.length) {
             v.source = 'road'; 
           }
         }
       }
-      // ----------------------------------------
 
       const s = plan.summary;
       this.routes.set(views);
@@ -252,9 +242,28 @@ export class Distace implements AfterViewInit, OnDestroy {
     }
   }
 
-  /** Pure mapping of the API response -> what the template needs. */
+  async confirmRoute(): Promise<void> {
+    if (this.loading() || this.committing() || this.routes().length === 0) return;
+
+    this.committing.set(true);
+    this.commitMessage.set(null);
+    this.error.set(null);
+    try {
+      const today = new Date();
+      const date = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      await firstValueFrom(
+        this.api.commitRoute(`${date} ${this.departure()}`, this.speedKmh(), this.stopMinutes()),
+      );
+      this.commitMessage.set('บันทึกแผนแล้ว ไรเดอร์จะเห็นเฉพาะออเดอร์ที่ได้รับมอบหมายหลังล็อกอิน');
+    } catch (e) {
+      console.error('Route commit failed', e);
+      this.error.set('บันทึกแผนจัดส่งไม่สำเร็จ กรุณาลองอีกครั้ง');
+    } finally {
+      this.committing.set(false);
+    }
+  }
+
   private toView(r: PlanRoute, index: number): RiderView {
-    // fall back to straight lines if the API did not send a road geometry[cite: 1]
     const geometry: LatLng[] = r.geometry?.length
       ? r.geometry
       : [DEPOT, ...r.stops.map((s): LatLng => [Number(s.latitude), Number(s.longitude)])];
@@ -268,7 +277,7 @@ export class Distace implements AfterViewInit, OnDestroy {
       stops: r.stops,
       geometry,
       legsKm: r.stops.map((s) => s.distance_from_previous_km),
-      source: r.distance_source ?? 'straight', //[cite: 1]
+      source: r.distance_source ?? 'straight',
       roadKm: r.distance_km,
       minutes: r.estimated_minutes,
       cost: r.delivery_cost,
@@ -295,12 +304,12 @@ export class Distace implements AfterViewInit, OnDestroy {
     this.bounds.clear();
 
     L.circle(DEPOT, {
-      color: '#94a3b8',      // สีเส้นขอบ (เทา)
-      fillColor: '#cbd5e1',  // สีพื้นหลัง
-      fillOpacity: 0.2,      // ความโปร่งใส
-      weight: 1.5,           // ความหนาเส้น
-      dashArray: '5, 5',     // เส้นประ
-      radius: 3000           // รัศมีในหน่วยเมตร
+      color: '#94a3b8',
+      fillColor: '#cbd5e1',
+      fillOpacity: 0.2,
+      weight: 1.5,
+      dashArray: '5, 5',
+      radius: 3000,
     }).addTo(this.layer);
 
     L.marker(DEPOT, {
@@ -317,8 +326,7 @@ export class Distace implements AfterViewInit, OnDestroy {
 
     for (const r of routes) {
       try {
-      const dashed = r.source === 'straight' ? '8 8' : undefined; //[cite: 1]
-      // white casing underneath so overlapping rider lines stay readable
+      const dashed = r.source === 'straight' ? '8 8' : undefined;
       const casing = L.polyline(r.geometry, { color: '#ffffff', weight: 9, opacity: 0.9, dashArray: dashed });
       const line = L.polyline(r.geometry, { color: r.color, weight: 5, opacity: 0.95, dashArray: dashed });
       casing.addTo(this.layer);

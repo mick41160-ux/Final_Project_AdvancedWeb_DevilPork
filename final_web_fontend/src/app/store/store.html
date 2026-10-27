@@ -4,7 +4,6 @@
         <p class="text-sm text-gray-500">ทุกการจัดส่งเริ่มจากที่นี่</p>
     </div>
 
-    <!-- Header Card -->
     <div class="flex flex-col md:flex-row mt-2 justify-between items-start md:items-center gap-6 bg-white p-5 rounded-lg shadow-md min-w-0">
         <div>
             <p class="text-sm font-bold text-gray-700">พร้อมสำหรับรอบมื้อเที่ยง</p>
@@ -23,7 +22,6 @@
         </div>
     </div>
 
-    <!-- Stats Grid -->
     <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mt-2">
         <div class="flex flex-col bg-white rounded-lg shadow-md gap-1 p-5 min-w-0">
             <p class="text-[12px] font-medium text-gray-400 truncate">จำนวนออเดอร์ทั้งหมด</p>
@@ -51,9 +49,7 @@
         </div>
     </div>
 
-    <!-- Map & Status -->
     <div class="flex flex-col lg:flex-row gap-5 mt-2">
-        <!-- Map -->
         <div class="flex flex-col bg-white rounded-lg shadow-md p-5 w-full lg:w-2/3 min-w-0 min-h-[400px]">
             <p class="text-[14px] font-bold text-gray-800">ภาพรวมพื้นที่ที่ต้องจัดส่ง</p>
             <p class="text-[11px] text-gray-400 mb-4 truncate">มหาวิทยาลัยมหาสารคามและพื้นที่ใกล้เคียง</p>
@@ -63,7 +59,6 @@
             </div>
         </div>
         
-        <!-- Status -->
         <div class="flex flex-col bg-white rounded-lg shadow-md p-5 w-full lg:w-1/3 min-w-0">
             <p class="text-[14px] font-bold text-gray-800">สถานะการจัดส่ง</p>
             <p class="text-2xl font-bold text-gray-800 mt-1 mb-6">{{ loading ? 'กำลังโหลด...' : orders.length + ' ออเดอร์' }}</p>
@@ -102,9 +97,7 @@
         </div>
     </div>
 
-    <!-- Tables -->
     <div class="flex flex-col lg:flex-row gap-5 mt-2 mb-6">
-        <!-- Orders -->
         <div class="flex flex-col bg-white rounded-lg shadow-md p-5 w-full lg:w-2/3 min-w-0">
             <p class="text-[14px] font-bold text-gray-800 mb-4">ออเดอร์ล่าสุด</p>
             <div class="overflow-x-auto w-full">
@@ -140,7 +133,6 @@
             </div>
         </div>
         
-        <!-- Riders -->
         <div class="flex flex-col bg-white rounded-lg shadow-md p-5 w-full lg:w-1/3 min-w-0">
             <p class="text-[14px] font-bold text-gray-800 mb-4">ไรเดอร์ที่พร้อมทำงาน</p>
             <div class="flex flex-col gap-3">

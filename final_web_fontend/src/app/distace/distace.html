@@ -75,8 +75,8 @@
                     <span>{{ loading() ? 'กำลังคำนวณ...' : 'คำนวณเส้นทาง' }}</span>
                 </button>
 
-                <button type="button"
-                    class="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#1a2b4c] text-white text-xs font-medium hover:bg-[#111e36] active:bg-[#0a1324] transition shadow-sm">
+                <button type="button" (click)="confirmRoute()" [disabled]="loading() || committing() || routes().length === 0"
+                    class="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#1a2b4c] disabled:opacity-60 text-white text-xs font-medium hover:bg-[#111e36] active:bg-[#0a1324] transition shadow-sm">
                     <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
@@ -94,6 +94,9 @@
 
             @if (error()) {
             <div class="mb-2 rounded-md bg-red-50 border border-red-200 text-red-700 text-xs px-3 py-2">{{ error() }}</div>
+            }
+            @if (commitMessage()) {
+            <div class="mb-2 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs px-3 py-2">{{ commitMessage() }}</div>
             }
             @if (summary().fallbackCount > 0) {
             <div class="mb-2 rounded-md bg-amber-50 border border-amber-200 text-amber-700 text-xs px-3 py-2">

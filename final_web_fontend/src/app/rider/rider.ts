@@ -16,6 +16,7 @@ export class RiderComponent {
   loading = true;
   error = '';
   searchTerm = '';
+  editingCustomer: Customer | null = null;
 
   constructor() { this.loadCustomers(); }
 
@@ -31,6 +32,51 @@ export class RiderComponent {
     this.api.getCustomers().subscribe({
       next: (customers) => { this.customers = customers; this.loading = false; this.error = ''; this.cdr.markForCheck(); },
       error: () => { this.loading = false; this.error = 'โหลดข้อมูลลูกค้าไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่อ API'; this.cdr.markForCheck(); },
+    });
+  }
+
+  startEdit(customer: Customer): void {
+    this.editingCustomer = { ...customer };
+    this.error = '';
+  }
+
+  cancelEdit(): void {
+    this.editingCustomer = null;
+  }
+
+  saveCustomer(): void {
+    const customer = this.editingCustomer;
+    if (!customer) return;
+
+    const { id, ...update } = customer;
+    this.api.updateCustomer(id, update).subscribe({
+      next: () => {
+        const index = this.customers.findIndex((item) => item.id === id);
+        if (index !== -1) this.customers[index] = { ...customer };
+        this.editingCustomer = null;
+        this.error = '';
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.error = 'แก้ไขข้อมูลลูกค้าไม่สำเร็จ';
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  deleteCustomer(customer: Customer): void {
+    if (!window.confirm(`ยืนยันการลบลูกค้า ${customer.first_name} ${customer.last_name} ใช่หรือไม่?`)) return;
+
+    this.api.deleteCustomer(customer.id).subscribe({
+      next: () => {
+        this.customers = this.customers.filter((item) => item.id !== customer.id);
+        if (this.editingCustomer?.id === customer.id) this.editingCustomer = null;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.error = 'ลบข้อมูลลูกค้าไม่สำเร็จ';
+        this.cdr.markForCheck();
+      },
     });
   }
 }
