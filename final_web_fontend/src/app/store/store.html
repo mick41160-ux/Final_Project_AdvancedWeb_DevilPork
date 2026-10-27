@@ -1,143 +1,167 @@
-<div class="flex flex-col gap-3; min-h-screen w-500; overflow-y-auto; p-1">
-    <p class="text-[40px] font-bold">ภาพรวมระบบ</p>
-    <p>ทุกการจัดส่งเริ่มจากที่นี่</p>
-    <div class="flex flex-row mt-5 space-between gap-270 bg-white p-5 rounded-lg shadow-md w-400">
+<div class="flex flex-col gap-4 min-h-screen bg-gray-100 p-4 md:p-6 overflow-x-hidden">
+    <div>
+        <p class="text-[32px] md:text-[40px] font-bold text-gray-800">ภาพรวมระบบ</p>
+        <p class="text-sm text-gray-500">ทุกการจัดส่งเริ่มจากที่นี่</p>
+    </div>
+
+    <!-- Header Card -->
+    <div class="flex flex-col md:flex-row mt-2 justify-between items-start md:items-center gap-6 bg-white p-5 rounded-lg shadow-md min-w-0">
         <div>
-            <p class="text-sm">พร้อมสำหรับรอบมื้อเที่ยง</p>
-            <p class="text-xs">รอบส่ง 11:30 น.</p>
+            <p class="text-sm font-bold text-gray-700">พร้อมสำหรับรอบมื้อเที่ยง</p>
+            <p class="text-xs text-gray-500">รอบส่ง 11:30 น.</p>
         </div>
-        <div class="flex flex-row gap-10">
-            <div class="w-full">
-                <p class="text-[11px]">เวลาจัดส่งคาดไว้</p>
-                <p class="text-xl">60 นาที</p>
+        <div class="flex flex-row flex-wrap items-center gap-4 md:gap-6">
+            <div>
+                <p class="text-[11px] text-gray-500">เวลาจัดส่งคาดไว้</p>
+                <p class="text-xl font-bold text-gray-800">60 นาที</p>
             </div>
-            <div class="w-1px h-full border-r border-gray-300 mx-4"></div>
-            <div class="w-full">
-                <p class="text-[11px]">ต้องส่งครบภายใน</p>
-                <p class="text-s">12:30 น.</p>
+            <div class="hidden md:block h-10 border-r border-gray-200"></div>
+            <div>
+                <p class="text-[11px] text-gray-500">ต้องส่งครบภายใน</p>
+                <p class="text-xl font-bold text-gray-800">12:30 น.</p>
             </div>
-        </div>
-
-
-    </div>
-    <div class="grid grid-cols-5 gap-4 mt-5">
-        <div class="flex flex-col bg-white rounded-lg shadow-md gap-2 p-5  w-75 h-full">
-            <p class="text-[13px] font-light text-gray-400">จำนวนออเดอร์ทั้งหมด</p>
-            <p class="text-[20px]">{{ loading ? 'กำลังโหลด...' : orders.length + ' ออเดอร์' }}</p>
-            <p class="text-[13px] font-light text-gray-400">รอบมื้อเที่ยงวัน</p>
-        </div>
-        <div class="flex flex-col bg-white rounded-lg shadow-md gap-2 p-5 w-75 h-full">
-            <p class="text-[13px] font-light text-gray-400">จำนวนกล่อง</p>
-            <p class="text-[20px]">{{ totalBoxes }} กล่อง</p>
-            <p class="text-[13px] font-light text-gray-400">65 บาท/กล่อง</p>
-        </div>
-        <div class="flex flex-col bg-white rounded-lg shadow-md gap-2 p-5 w-75 h-full">
-            <p class="text-[13px] font-light text-gray-400">ไรเดอร์พร้อมทำงาน</p>
-            <p class="text-[20px]">{{ readyRiders.length }} คน</p>
-            <p class="text-[13px] font-light text-gray-400">สูงสุด 3 ออเดอร์/รอบ</p>
-        </div>
-        <div class="flex flex-col bg-white rounded-lg shadow-md gap-2 p-5 w-75 h-full">
-            <p class="text-[13px] font-light text-gray-400">ค่าจัดส่งประมาณการ</p>
-            <p class="text-[20px]">฿{{ totalBoxes * 65 }}</p>
-        </div>
-        <div class="flex flex-col bg-white rounded-lg shadow-md gap-2 p-5 w-75 h-full">
-            <p class="text-[13px] font-light text-gray-400">กำไรประมาณการ</p>
-            <p class="text-[20px]">฿{{ totalBoxes * 13 }}</p>
-            <p class="text-[13px] font-light text-gray-400">หลังหักต้นทุนอาหารและจัดส่ง</p>
         </div>
     </div>
-    <div class="flex flex-row space-between gap-5 mt-5 h-180 ">
-        <div class="flex flex-col bg-white rounded-lg shadow-md p-5 w-300 h-full">
-            <p class="text-[11.99px]">ภาพรวมพื้่นที่ที่ต้องจัดส่ง</p>
-            <p class="text-[10px] font-light text-gray-400">มหาวิทยาลัยมหาสารคามและพื้นที่ใกล้เคียง</p>
 
-            <!-- แผนที่แบบ iframe แต่งด้วย Tailwind -->
-            <div class="w-full h-full rounded-lg overflow-hidden shadow-md mt-4">
-                <iframe src="https://www.google.com/maps/embed?pb=..." class="w-full h-full border-0" allowfullscreen=""
-                    loading="lazy" referrerpolicy="no-referrer-when-downgrade">
-                </iframe>
-            </div>
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mt-2">
+        <div class="flex flex-col bg-white rounded-lg shadow-md gap-1 p-5 min-w-0">
+            <p class="text-[12px] font-medium text-gray-400 truncate">จำนวนออเดอร์ทั้งหมด</p>
+            <p class="text-2xl font-bold text-gray-800">{{ loading ? '...' : orders.length }}</p>
+            <p class="text-[11px] font-light text-gray-400 mt-auto">รอบมื้อเที่ยงวัน</p>
         </div>
-        <div class="flex flex-col bg-white rounded-lg shadow-md p-5 w-90 h-full">
-            <p class="text-[11.99px]">สถานะการจัดส่ง</p>
-            <p class="text-[20px]">{{ loading ? 'กำลังโหลด...' : 'จำนวน ' + orders.length + ' ออเดอร์' }}</p>
-            <div class="flex flex-col gap-2 mt-4">
-                <div class="flex flex-row justify-between items-center">
-                    <p class="text-[11px]">รอจัดส่ง</p>
-                    <p class="text-[11px]">{{ countStatus('ready') + countStatus('pending') }} ออเดอร์</p>
-                </div>
-                <div class="w-full h-2 bg-gray-200 rounded-full">
-                    <div class="h-full bg-blue-500 rounded-full" [style.width.%]="orders.length ? (countStatus('ready') + countStatus('pending')) / orders.length * 100 : 0"></div>
-                </div>
-                <div class="flex flex-row justify-between items-center">
-                    <p class="text-[11px]">กำลังจัดส่ง</p>
-                    <p class="text-[11px]">{{ countStatus('assigned') }} ออเดอร์</p>
-                </div>
-                <div class="w-full h-2 bg-gray-200 rounded-full">
-                    <div class="h-full bg-yellow-500 rounded-full" [style.width.%]="orders.length ? countStatus('assigned') / orders.length * 100 : 0"></div>
-                </div>
-                <div class="flex flex-row justify-between items-center">
-                    <p class="text-[11px]">จัดส่งสำเร็จ</p>
-                    <p class="text-[11px]">{{ countStatus('delivered') }} ออเดอร์</p>
-                </div>
-                <div class="w-full h-2 bg-gray-200 rounded-full">
-                    <div class="h-full bg-green-500 rounded-full" [style.width.%]="orders.length ? countStatus('delivered') / orders.length * 100 : 0"></div>
-                </div>
-            </div>
-
+        <div class="flex flex-col bg-white rounded-lg shadow-md gap-1 p-5 min-w-0">
+            <p class="text-[12px] font-medium text-gray-400 truncate">จำนวนกล่อง</p>
+            <p class="text-2xl font-bold text-gray-800">{{ totalBoxes }}</p>
+            <p class="text-[11px] font-light text-gray-400 mt-auto">65 บาท/กล่อง</p>
+        </div>
+        <div class="flex flex-col bg-white rounded-lg shadow-md gap-1 p-5 min-w-0">
+            <p class="text-[12px] font-medium text-gray-400 truncate">ไรเดอร์พร้อมทำงาน</p>
+            <p class="text-2xl font-bold text-gray-800">{{ readyRiders.length }}</p>
+            <p class="text-[11px] font-light text-gray-400 mt-auto">สูงสุด 3 ออเดอร์/รอบ</p>
+        </div>
+        <div class="flex flex-col bg-white rounded-lg shadow-md gap-1 p-5 min-w-0">
+            <p class="text-[12px] font-medium text-gray-400 truncate">ค่าจัดส่งประมาณการ</p>
+            <p class="text-2xl font-bold text-gray-800">฿{{ totalBoxes * 65 }}</p>
+        </div>
+        <div class="flex flex-col bg-white rounded-lg shadow-md gap-1 p-5 col-span-2 lg:col-span-1 min-w-0">
+            <p class="text-[12px] font-medium text-gray-400 truncate">กำไรประมาณการ</p>
+            <p class="text-2xl font-bold text-gray-800">฿{{ totalBoxes * 13 }}</p>
+            <p class="text-[11px] font-light text-gray-400 mt-auto truncate">หลังหักต้นทุนอาหารและจัดส่ง</p>
         </div>
     </div>
-    <div class="flex flex-row gap-5 mt-5 h-180">
-        <div class="flex flex-col bg-white rounded-lg shadow-md w-300 h-full">
-            <p class="text-[20px] p-5">ออเดอร์ล่าสุด</p>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+
+    <!-- Map & Status -->
+    <div class="flex flex-col lg:flex-row gap-5 mt-2">
+        <!-- Map -->
+        <div class="flex flex-col bg-white rounded-lg shadow-md p-5 w-full lg:w-2/3 min-w-0 min-h-[400px]">
+            <p class="text-[14px] font-bold text-gray-800">ภาพรวมพื้นที่ที่ต้องจัดส่ง</p>
+            <p class="text-[11px] text-gray-400 mb-4 truncate">มหาวิทยาลัยมหาสารคามและพื้นที่ใกล้เคียง</p>
+            
+            <div class="relative w-full h-full min-h-[350px] bg-stone-100 rounded-lg overflow-hidden border border-gray-200">
+                <div id="storeMap" class="absolute inset-0 z-0"></div>
+            </div>
+        </div>
+        
+        <!-- Status -->
+        <div class="flex flex-col bg-white rounded-lg shadow-md p-5 w-full lg:w-1/3 min-w-0">
+            <p class="text-[14px] font-bold text-gray-800">สถานะการจัดส่ง</p>
+            <p class="text-2xl font-bold text-gray-800 mt-1 mb-6">{{ loading ? 'กำลังโหลด...' : orders.length + ' ออเดอร์' }}</p>
+            
+            <div class="flex flex-col gap-4">
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <p class="text-xs font-medium text-gray-600">รอจัดส่ง</p>
+                        <p class="text-xs font-bold text-blue-600">{{ countStatus('ready') + countStatus('pending') }} ออเดอร์</p>
+                    </div>
+                    <div class="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div class="h-full bg-blue-500 rounded-full transition-all" [style.width.%]="orders.length ? (countStatus('ready') + countStatus('pending')) / orders.length * 100 : 0"></div>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <p class="text-xs font-medium text-gray-600">กำลังจัดส่ง</p>
+                        <p class="text-xs font-bold text-yellow-600">{{ countStatus('assigned') }} ออเดอร์</p>
+                    </div>
+                    <div class="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div class="h-full bg-yellow-500 rounded-full transition-all" [style.width.%]="orders.length ? countStatus('assigned') / orders.length * 100 : 0"></div>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <p class="text-xs font-medium text-gray-600">จัดส่งสำเร็จ</p>
+                        <p class="text-xs font-bold text-green-600">{{ countStatus('delivered') }} ออเดอร์</p>
+                    </div>
+                    <div class="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div class="h-full bg-green-500 rounded-full transition-all" [style.width.%]="orders.length ? countStatus('delivered') / orders.length * 100 : 0"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tables -->
+    <div class="flex flex-col lg:flex-row gap-5 mt-2 mb-6">
+        <!-- Orders -->
+        <div class="flex flex-col bg-white rounded-lg shadow-md p-5 w-full lg:w-2/3 min-w-0">
+            <p class="text-[14px] font-bold text-gray-800 mb-4">ออเดอร์ล่าสุด</p>
+            <div class="overflow-x-auto w-full">
+                <table class="min-w-full divide-y divide-gray-100">
+                    <thead class="bg-gray-50/50">
                         <tr>
-                            <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                รหัสออเดอร์</th>
-                            <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                ลูกค้า</th>
-                            <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                สถานะ
-                            </th>
-                            <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                เวลา
-                            </th>
+                            <th scope="col" class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">รหัสออเดอร์</th>
+                            <th scope="col" class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">ลูกค้า</th>
+                            <th scope="col" class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">จำนวน</th>
+                            <th scope="col" class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">สถานะ</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @if (error) { <tr><td colspan="4" class="px-6 py-4 text-sm text-red-600">{{ error }}</td></tr> }
-                        @else if (loading) { <tr><td colspan="4" class="px-6 py-4 text-sm text-gray-500">กำลังโหลดออเดอร์...</td></tr> }
-                        @else if (orders.length === 0) { <tr><td colspan="4" class="px-6 py-4 text-sm text-gray-500">ยังไม่มีออเดอร์</td></tr> }
-                        @else { @for (order of orders.slice(0, 8); track order.id) {
-                        <tr>
-                            <td class="px-6 text-xs py-4 whitespace-nowrap">#{{ order.id }}</td>
-                            <td class="px-6 text-xs py-4 whitespace-nowrap">{{ customerName(order) }}</td>
-                            <td class="px-6 text-xs py-4 whitespace-nowrap">{{ order.box_count }}</td>
-                            <td class="px-6 text-xs py-4 whitespace-nowrap">{{ order.status }}</td>
-                        </tr>
-                        } }
+                    <tbody class="bg-white divide-y divide-gray-50">
+                        @if (error) { <tr><td colspan="4" class="px-4 py-4 text-xs text-red-500">{{ error }}</td></tr> }
+                        @else if (loading) { <tr><td colspan="4" class="px-4 py-4 text-xs text-gray-400">กำลังโหลด...</td></tr> }
+                        @else if (orders.length === 0) { <tr><td colspan="4" class="px-4 py-4 text-xs text-gray-400">ยังไม่มีออเดอร์</td></tr> }
+                        @else { 
+                            @for (order of orders.slice(0, 8); track order.id) {
+                            <tr class="hover:bg-gray-50/50 transition-colors">
+                                <td class="px-4 py-3 text-xs font-medium text-gray-800 whitespace-nowrap">#{{ order.id }}</td>
+                                <td class="px-4 py-3 text-xs text-gray-600 whitespace-nowrap">{{ customerName(order) }}</td>
+                                <td class="px-4 py-3 text-xs text-gray-600 whitespace-nowrap">{{ order.box_count }} กล่อง</td>
+                                <td class="px-4 py-3 text-xs whitespace-nowrap">
+                                    <span class="px-2 py-1 rounded-full text-[10px] font-medium bg-blue-50 text-blue-600">
+                                        {{ order.status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            } 
+                        }
                     </tbody>
                 </table>
             </div>
         </div>
-        <div class="flex flex-col bg-white rounded-lg shadow-md p-5 w-90 h-full">
-            <p class="text-[20px]">ไรเดอร์ที่พร้อมทำงาน</p>
-            <div class="flex flex-col gap-2 mt-4">
+        
+        <!-- Riders -->
+        <div class="flex flex-col bg-white rounded-lg shadow-md p-5 w-full lg:w-1/3 min-w-0">
+            <p class="text-[14px] font-bold text-gray-800 mb-4">ไรเดอร์ที่พร้อมทำงาน</p>
+            <div class="flex flex-col gap-3">
                 @for (rider of readyRiders.slice(0, 6); track rider.id) {
-                <div class="flex flex-row justify-between items-center">
-                    <p class="text-[11px]">{{ rider.display_name }}</p>
-                    <p class="text-[11px] text-green-600">พร้อมทำงาน</p>
+                <div class="flex flex-row justify-between items-center p-3 rounded-lg border border-gray-100 bg-gray-50/30 min-w-0">
+                    <div class="flex items-center gap-3 truncate">
+                        <div class="w-8 h-8 shrink-0 rounded-full bg-[#1a2b4c] text-white flex items-center justify-center text-xs font-bold">
+                            {{ rider.display_name.charAt(0) }}
+                        </div>
+                        <p class="text-xs font-medium text-gray-800 truncate">{{ rider.display_name }}</p>
+                    </div>
+                    <span class="flex items-center shrink-0 gap-1.5 text-[10px] font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                        <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                        พร้อมทำงาน
+                    </span>
                 </div>
                 }
-                @if (!loading && readyRiders.length === 0) { <p class="text-[11px] text-gray-400">ไม่มีไรเดอร์ที่พร้อมทำงาน</p> }
+                @if (!loading && readyRiders.length === 0) { 
+                    <p class="text-xs text-gray-400 text-center py-4">ไม่มีไรเดอร์ที่พร้อมทำงาน</p> 
+                }
             </div>
-
         </div>
     </div>
 </div>

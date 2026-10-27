@@ -7,12 +7,22 @@ import type { PoolConnection } from "mysql2/promise";
 export const router = express.Router();
 
 const DEPOT = { latitude: 16.2468, longitude: 103.2514 };
-const SERVICE_RADIUS_KM = 3;
 const DEFAULT_DEPARTURE = "11:30";
+const DEADLINE_MINUTES = 12 * 60 + 30;
 const RIDER_FEE = 15;
 const COST_PER_KM_PER_BOX = 2;
-const SPEED_KMH = 30;
-const STOP_MINUTES = 4;
+const REVENUE_PER_BOX = 65;
+const FOOD_COST_PER_BOX = 40;
+const DEFAULT_SPEED_KMH = 30;
+const DEFAULT_STOP_MINUTES = 4;
+const MAX_STOPS_PER_RIDER = 3;
+// tried in order; the next one is used if the previous fails
+const OSRM_URLS = [
+  "https://router.project-osrm.org/route/v1/driving",
+  "https://routing.openstreetmap.de/routed-car/route/v1/driving",
+];
+
+type LatLng = [number, number]; // [lat, lng]
 
 interface ReadyOrder extends RowDataPacket {
   id: number;
@@ -56,8 +66,18 @@ interface RoutePlan {
   delivery_cost: number;
   estimated_minutes: number;
   estimated_arrival_at: string;
+  distance_source: "road" | "straight";
+  geometry: LatLng[]; // road-following polyline (depot -> last stop)
   stops: StopPlan[];
 }
+
+interface PlanParams {
+  planned_departure?: unknown;
+  speed_kmh?: unknown;
+  stop_minutes?: unknown;
+}
+
+/* ---------- distance helpers ---------- */
 
 function distanceKm(
   a: { latitude: number; longitude: number },
@@ -73,6 +93,56 @@ function distanceKm(
       Math.sin(dLng / 2) ** 2;
   return 6371 * 2 * Math.asin(Math.sqrt(haversine));
 }
+
+const roadCache = new Map<string, { geometry: LatLng[]; legsKm: number[] }>();
+
+/** Ask OSRM for road geometry + per-leg distance (cached by coordinates). */
+async function roadRoute(points: LatLng[]) {
+  const coords = points.map(([lat, lng]) => `${lng},${lat}`).join(";");
+  const cached = roadCache.get(coords);
+  if (cached) return cached;
+
+  let lastError: unknown;
+  for (const base of OSRM_URLS) {
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const res = await fetch(
+          `${base}/${coords}?overview=full&geometries=geojson&steps=false`,
+          {
+            signal: AbortSignal.timeout(12000),
+            headers: { "User-Agent": "delivery-planner/1.0" },
+          },
+        );
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data: any = await res.json();
+        const best = data?.routes?.[0];
+        if (data?.code !== "Ok" || !best) throw new Error(`code ${data?.code}`);
+
+        const value = {
+          geometry: (best.geometry.coordinates as [number, number][]).map(
+            ([lng, lat]): LatLng => [lat, lng],
+          ),
+          legsKm: (best.legs as { distance: number }[]).map(
+            (l) => l.distance / 1000,
+          ),
+        };
+        roadCache.set(coords, value);
+        return value;
+     } catch (error: any) {
+        lastError = error;
+        console.warn(
+          `OSRM failed (${base}, attempt ${attempt}): ${error?.cause?.code ?? error?.message ?? error}`,
+        );
+        if (attempt < 2) {
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
+      }
+    }
+  }
+  throw lastError;
+}
+
+/* ---------- time helpers ---------- */
 
 function parseDeparture(
   value: unknown,
@@ -106,145 +176,196 @@ function formatDateTime(date: string, minutes: number): string {
   return `${day.toISOString().slice(0, 10)} ${String(Math.floor(timeOfDay / 60)).padStart(2, "0")}:${String(timeOfDay % 60).padStart(2, "0")}:00`;
 }
 
-function planOrders(
-  orders: ReadyOrder[],
-  riders: AvailableRider[],
-  departure: { date: string; minutes: number },
-): RoutePlan[] {
+/* ---------- planning ---------- */
+
+/** Step 1: decide who delivers what, and in which order (nearest-neighbour). */
+function assignOrders(orders: ReadyOrder[], riders: AvailableRider[]) {
   const unassigned = [...orders];
-  const routes: RoutePlan[] = [];
+  const assignments: { rider: AvailableRider; orders: ReadyOrder[] }[] = [];
 
   for (const rider of riders) {
     if (unassigned.length === 0) break;
-    const stops: StopPlan[] = [];
-    let current = DEPOT;
-    let boxes = 0;
-    let elapsed = 0;
-    let totalDistance = 0;
+    const picked: ReadyOrder[] = [];
+    let current: { latitude: number; longitude: number } = DEPOT;
 
-    while (stops.length < 3 && unassigned.length > 0) {
+    while (picked.length < MAX_STOPS_PER_RIDER && unassigned.length > 0) {
       let bestIndex = -1;
       let bestDistance = Number.POSITIVE_INFINITY;
-      for (let index = 0; index < unassigned.length; index++) {
-        const distance = distanceKm(current, unassigned[index]);
+      for (let i = 0; i < unassigned.length; i++) {
+        const d = distanceKm(current, unassigned[i]);
         if (
-          distance < bestDistance ||
-          (distance === bestDistance &&
-            unassigned[index].id < unassigned[bestIndex]?.id)
+          d < bestDistance ||
+          (d === bestDistance && unassigned[i].id < unassigned[bestIndex]?.id)
         ) {
-          bestDistance = distance;
-          bestIndex = index;
+          bestDistance = d;
+          bestIndex = i;
         }
       }
-      const order = unassigned[bestIndex];
-      unassigned.splice(bestIndex, 1);
-      totalDistance += bestDistance;
-      elapsed += (bestDistance / SPEED_KMH) * 60 + STOP_MINUTES;
-      boxes += Number(order.box_count);
-      stops.push({
-        order_id: Number(order.id),
-        customer_id: Number(order.customer_id),
-        first_name: order.first_name,
-        last_name: order.last_name,
-        phone: order.phone,
-        address: order.address,
-        latitude: Number(order.latitude),
-        longitude: Number(order.longitude),
-        box_count: Number(order.box_count),
-        stop_sequence: stops.length + 1,
-        estimated_arrival_at: formatDateTime(
-          departure.date,
-          departure.minutes + Math.round(elapsed),
-        ),
-        distance_from_previous_km: Number(bestDistance.toFixed(3)),
-      });
+      const [order] = unassigned.splice(bestIndex, 1);
+      picked.push(order);
       current = order;
     }
-
-    if (stops.length > 0) {
-      routes.push({
-        rider_id: Number(rider.id),
-        rider_name: rider.display_name,
-        phone: rider.phone,
-        distance_km: Number(totalDistance.toFixed(3)),
-        box_count: boxes,
-        delivery_cost: Number(
-          (RIDER_FEE + totalDistance * boxes * COST_PER_KM_PER_BOX).toFixed(2),
-        ),
-        estimated_minutes: Math.ceil(elapsed),
-        estimated_arrival_at: stops[stops.length - 1].estimated_arrival_at,
-        stops,
-      });
-    }
+    if (picked.length) assignments.push({ rider, orders: picked });
   }
-
-  return routes;
+  return assignments;
 }
 
-async function calculatePlan(plannedDeparture: unknown) {
-  const departure = parseDeparture(plannedDeparture);
+/** Step 2: real road distance (fallback: straight line), arrival times, cost. */
+async function buildRoute(
+  rider: AvailableRider,
+  orders: ReadyOrder[],
+  departure: { date: string; minutes: number },
+  speedKmh: number,
+  stopMinutes: number,
+): Promise<RoutePlan> {
+  const points: LatLng[] = [
+    [DEPOT.latitude, DEPOT.longitude],
+    ...orders.map((o): LatLng => [Number(o.latitude), Number(o.longitude)]),
+  ];
+
+  let geometry: LatLng[] = points;
+  let legsKm: number[];
+  let source: "road" | "straight" = "straight";
+  try {
+    const road = await roadRoute(points);
+    geometry = road.geometry;
+    legsKm = road.legsKm;
+    source = "road";
+  } catch (error) {
+    console.warn(
+      `Road routing failed for rider ${rider.id}, using straight lines`,
+      error,
+    );
+    legsKm = points.slice(1).map((p, i) =>
+      distanceKm(
+        { latitude: points[i][0], longitude: points[i][1] },
+        { latitude: p[0], longitude: p[1] },
+      ),
+    );
+  }
+
+  let elapsed = 0;
+  let boxes = 0;
+  const stops: StopPlan[] = orders.map((order, i) => {
+    const km = legsKm[i] ?? 0;
+    elapsed += (km / speedKmh) * 60 + stopMinutes;
+    boxes += Number(order.box_count);
+    return {
+      order_id: Number(order.id),
+      customer_id: Number(order.customer_id),
+      first_name: order.first_name,
+      last_name: order.last_name,
+      phone: order.phone,
+      address: order.address,
+      latitude: Number(order.latitude),
+      longitude: Number(order.longitude),
+      box_count: Number(order.box_count),
+      stop_sequence: i + 1,
+      estimated_arrival_at: formatDateTime(
+        departure.date,
+        departure.minutes + Math.round(elapsed),
+      ),
+      distance_from_previous_km: Number(km.toFixed(3)),
+    };
+  });
+
+  const totalKm = legsKm.reduce((a, b) => a + b, 0);
+  return {
+    rider_id: Number(rider.id),
+    rider_name: rider.display_name,
+    phone: rider.phone,
+    distance_km: Number(totalKm.toFixed(3)),
+    box_count: boxes,
+    delivery_cost: Number(
+      (RIDER_FEE + totalKm * boxes * COST_PER_KM_PER_BOX).toFixed(2),
+    ),
+    estimated_minutes: Math.ceil(elapsed),
+    estimated_arrival_at: stops[stops.length - 1].estimated_arrival_at,
+    distance_source: source,
+    geometry,
+    stops,
+  };
+}
+
+async function calculatePlan(params: PlanParams = {}) {
+  const departure = parseDeparture(params.planned_departure);
   if (!departure)
     return {
       error: "planned_departure must use HH:mm or YYYY-MM-DD HH:mm format",
     } as const;
 
-  const [allReadyOrders] = await conn.query<ReadyOrder[]>(
+  const speedKmh =
+    params.speed_kmh === undefined
+      ? DEFAULT_SPEED_KMH
+      : Number(params.speed_kmh);
+  const stopMinutes =
+    params.stop_minutes === undefined
+      ? DEFAULT_STOP_MINUTES
+      : Number(params.stop_minutes);
+  if (!(speedKmh > 0))
+    return { error: "speed_kmh must be greater than 0" } as const;
+  if (!(stopMinutes >= 0))
+    return { error: "stop_minutes must be 0 or greater" } as const;
+
+  const [orderRows] = await conn.query<ReadyOrder[]>(
     `SELECT o.id, o.customer_id, o.box_count, c.first_name, c.last_name, c.phone,
       c.address, c.latitude, c.longitude
      FROM ORDERS o JOIN CUSTOMERS c ON c.id = o.customer_id
      WHERE o.status IN ('pending', 'ready')
      ORDER BY o.id`,
   );
-  // Only plan deliveries in the restaurant's Maha Sarakham service area.
-  // Nearby customers from other provinces must not be mixed into this run.
-  const orderRows = allReadyOrders.filter(
-    (order) => distanceKm(DEPOT, order) <= SERVICE_RADIUS_KM,
-  );
-  const outsideServiceAreaOrderCount = allReadyOrders.length - orderRows.length;
   const [riderRows] = await conn.query<AvailableRider[]>(
     "SELECT id, display_name, phone FROM RIDERS WHERE is_available = TRUE ORDER BY id",
   );
 
-  const routes = planOrders(orderRows, riderRows, departure);
+  const assignments = assignOrders(orderRows, riderRows);
+  const routes: RoutePlan[] = [];
+  for (const a of assignments) {
+    const route = await buildRoute(a.rider, a.orders, departure, speedKmh, stopMinutes);
+    routes.push(route);
+    // เพิ่มการหน่วงเวลา 500 มิลลิวินาที เพื่อไม่ให้เซิร์ฟเวอร์ OSRM สาธารณะแบนการเชื่อมต่อ
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+
   const assignedOrderIds = new Set(
     routes.flatMap((route) => route.stops.map((stop) => stop.order_id)),
   );
-  const totalDistance = routes.reduce(
-    (sum, route) => sum + route.distance_km,
-    0,
-  );
-  const totalBoxes = routes.reduce((sum, route) => sum + route.box_count, 0);
-  const totalRevenue = totalBoxes * 65;
-  const foodCost = totalBoxes * 40;
+  const totalDistance = routes.reduce((sum, r) => sum + r.distance_km, 0);
+  const totalBoxes = routes.reduce((sum, r) => sum + r.box_count, 0);
+  const totalRevenue = totalBoxes * REVENUE_PER_BOX;
+  const foodCost = totalBoxes * FOOD_COST_PER_BOX;
   const deliveryCost = Number(
-    routes.reduce((sum, route) => sum + route.delivery_cost, 0).toFixed(2),
+    routes.reduce((sum, r) => sum + r.delivery_cost, 0).toFixed(2),
   );
-  const finishDeadline = formatDateTime(departure.date, 12 * 60 + 30);
+  const finishDeadline = formatDateTime(departure.date, DEADLINE_MINUTES);
   const latestArrival = routes.reduce(
-    (latest, route) =>
-      route.estimated_arrival_at > latest ? route.estimated_arrival_at : latest,
+    (latest, r) =>
+      r.estimated_arrival_at > latest ? r.estimated_arrival_at : latest,
     formatDateTime(departure.date, departure.minutes),
   );
+  const fallbackCount = routes.filter(
+    (r) => r.distance_source === "straight",
+  ).length;
 
   return {
     active_plan: {
-      id: null,
+      id: null as number | null,
       status: "draft",
       planned_departure: formatDateTime(departure.date, departure.minutes),
       finish_deadline: finishDeadline,
       assumptions: {
-        distance_model: "haversine_straight_line",
-        speed_kmh: SPEED_KMH,
-        stop_minutes: STOP_MINUTES,
-        max_stops_per_rider: 3,
-        service_radius_km: SERVICE_RADIUS_KM,
+        distance_model: fallbackCount
+          ? "osrm_road_with_haversine_fallback"
+          : "osrm_road",
+        speed_kmh: speedKmh,
+        stop_minutes: stopMinutes,
+        max_stops_per_rider: MAX_STOPS_PER_RIDER,
         rider_fee: RIDER_FEE,
         cost_per_km_per_box: COST_PER_KM_PER_BOX,
       },
       summary: {
         order_count: assignedOrderIds.size,
         total_order_count: orderRows.length,
-        outside_service_area_order_count: outsideServiceAreaOrderCount,
         unassigned_order_ids: orderRows
           .filter((order) => !assignedOrderIds.has(Number(order.id)))
           .map((order) => Number(order.id)),
@@ -252,6 +373,7 @@ async function calculatePlan(plannedDeparture: unknown) {
         total_distance_km: Number(totalDistance.toFixed(3)),
         estimated_finish_at: latestArrival,
         meets_deadline: latestArrival <= finishDeadline,
+        fallback_count: fallbackCount,
         revenue: totalRevenue,
         food_cost: foodCost,
         delivery_cost: deliveryCost,
@@ -263,6 +385,8 @@ async function calculatePlan(plannedDeparture: unknown) {
     },
   };
 }
+
+/* ---------- endpoints ---------- */
 
 router.get("/latest", async (_req, res) => {
   try {
@@ -305,7 +429,7 @@ router.get("/latest", async (_req, res) => {
 
 router.post("/calculate", async (req, res) => {
   try {
-    const result = await calculatePlan(req.body?.planned_departure);
+    const result = await calculatePlan(req.body ?? {});
     if ("error" in result) return res.status(400).json({ error: result.error });
     res.json(result);
   } catch (error: any) {
@@ -317,25 +441,21 @@ router.post("/calculate", async (req, res) => {
 router.post("/commit", async (req, res) => {
   let connection: PoolConnection | undefined;
   try {
-    const result = await calculatePlan(req.body?.planned_departure);
+    const result = await calculatePlan(req.body ?? {});
     if ("error" in result) return res.status(400).json({ error: result.error });
     const plan = result.active_plan;
     if (plan.summary.total_order_count === 0) {
-      return res
-        .status(409)
-        .json({
-          error: "There are no pending or ready orders to assign",
-          plan,
-        });
+      return res.status(409).json({
+        error: "There are no pending or ready orders to assign",
+        plan,
+      });
     }
     if (plan.summary.unassigned_order_ids.length) {
-      return res
-        .status(409)
-        .json({
-          error:
-            "Not all ready orders can be assigned; add available riders or review the 3-stop rider limit",
-          plan,
-        });
+      return res.status(409).json({
+        error:
+          "Not all ready orders can be assigned; add available riders or review the 3-stop rider limit",
+        plan,
+      });
     }
     if (!plan.summary.meets_deadline) {
       return res
@@ -381,17 +501,15 @@ router.post("/commit", async (req, res) => {
     }
 
     await connection.commit();
-    (plan as { id: number | null; status: string }).id = routingRunId;
-    (plan as { id: number | null; status: string }).status = "committed";
-    res
-      .status(201)
-      .json({
-        active_plan: plan,
-        rider_job_codes: plan.routes.map((route) => ({
-          rider_id: route.rider_id,
-          job_code: (route as RoutePlan & { job_code?: string }).job_code,
-        })),
-      });
+    plan.id = routingRunId;
+    plan.status = "committed";
+    res.status(201).json({
+      active_plan: plan,
+      rider_job_codes: plan.routes.map((route) => ({
+        rider_id: route.rider_id,
+        job_code: (route as RoutePlan & { job_code?: string }).job_code,
+      })),
+    });
   } catch (error: any) {
     if (connection) await connection.rollback();
     console.error("Routing commit failed:", error);

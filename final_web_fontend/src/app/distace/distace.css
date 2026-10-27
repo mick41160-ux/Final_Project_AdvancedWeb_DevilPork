@@ -1,4 +1,3 @@
-
 .form-container {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -97,5 +96,11 @@
 :host ::ng-deep .route-marker--stop {
   width: 28px;
   height: 28px;
-  background: #2563eb;
+  background: var(--rider-color, #2563eb);
+}
+
+:host ::ng-deep .route-arrow {
+  background: none;
+  border: 0;
+  pointer-events: none;
 }
