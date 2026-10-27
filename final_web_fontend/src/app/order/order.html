@@ -1,0 +1,72 @@
+<div class="flex flex-col gap-3; min-h-screen w-500; overflow-y-auto; p-1">
+    <p class="text-[40px] font-bold">จัดการออเดอร์</p>
+    <p class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">เตรียมออเดอร์ให้พร้อมสำหรับรอบมื้อเที่ยง</p>
+    <div class="flex flex-row gap-5 mt-5 h-180">
+        <div class="flex flex-col bg-white rounded-lg shadow-md w-full h-full">
+            <p class="text-[20px] p-5">ออเดอร์ล่าสุด</p>
+            <div class="bg-white p-3 border border-slate-200 rounded-xl flex items-center gap-3 w-full max-w-xl">
+
+             
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 " fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+
+                   
+                    <input type="search" placeholder="ค้นหาชื่อ เบอร์โทร หรือเลขรายการ" [(ngModel)]="searchTerm"
+                        class="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:border-blue-400 transition-colors" />
+
+                </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+                                รหัสออเดอร์</th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+                                ลูกค้า</th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+                                จำนวนกล่อง
+                            </th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+                                ราคา
+                            </th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+                                สถานะ
+                            </th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+                                จัดการ
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @if (loading) { <tr><td colspan="6" class="px-6 py-6 text-sm text-gray-500">กำลังโหลดข้อมูลออเดอร์...</td></tr> }
+                        @else if (error) { <tr><td colspan="6" class="px-6 py-6 text-sm text-red-600">{{ error }} <button class="ml-2 underline" (click)="loadOrders()">ลองอีกครั้ง</button></td></tr> }
+                        @else if (filteredOrders.length === 0) { <tr><td colspan="6" class="px-6 py-6 text-sm text-gray-500">ไม่พบข้อมูลออเดอร์</td></tr> }
+                        @else { @for (order of filteredOrders; track order.id) {
+                        <tr>
+                            <td class="px-6 text-xs py-4 whitespace-nowrap">#{{ order.id }}</td>
+                            <td class="px-6 text-xs py-4 whitespace-nowrap">{{ order.first_name }} {{ order.last_name }}<br><span class="text-gray-400">{{ order.phone }}</span></td>
+                            <td class="px-6 text-xs py-4 whitespace-nowrap">{{ order.box_count }} กล่อง</td>
+                            <td class="px-6 text-xs py-4 whitespace-nowrap">฿{{ order.box_count * 65 }}</td>
+                            <td class="px-6 text-xs py-4 whitespace-nowrap">
+                                <select [ngModel]="order.status" (ngModelChange)="updateStatus(order, $event)" [name]="'status-' + order.id" class="border rounded px-2 py-1 text-xs">
+                                    @for (status of statuses; track status) { <option [value]="status">{{ statusLabels[status] }}</option> }
+                                </select>
+                            </td>
+                            <td class="px-6 text-xs py-4 whitespace-nowrap"><button class="text-red-600 hover:underline" (click)="deleteOrder(order)">ลบ</button></td>
+                        </tr>
+                        } }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -7,7 +7,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "final_project": {
+    "final_web_fontend": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -57,10 +57,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "final_project:build:production"
+              "buildTarget": "final_web_fontend:build:production"
             },
             "development": {
-              "buildTarget": "final_project:build:development"
+              "buildTarget": "final_web_fontend:build:development"
             }
           },
           "defaultConfiguration": "development"

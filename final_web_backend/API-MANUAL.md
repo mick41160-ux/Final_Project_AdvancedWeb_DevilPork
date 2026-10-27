@@ -51,7 +51,13 @@ Content-Type: application/json
 | PUT | `/api/order/:id` | แก้ไขออเดอร์ |
 | DELETE | `/api/order/:id` | ลบออเดอร์ |
 | GET | `/api/rider` | แสดงไรเดอร์ |
+| POST | `/api/rider` | เพิ่มไรเดอร์ |
+| PUT | `/api/rider/:id` | แก้ไขข้อมูล/สถานะไรเดอร์ |
+| DELETE | `/api/rider/:id` | ลบไรเดอร์ |
 | GET | `/api/routing/latest` | แสดงแผนเส้นทางล่าสุด |
+| POST | `/api/routing/calculate` | คำนวณแผนร่าง |
+| POST | `/api/routing/commit` | ยืนยันและบันทึกแผน |
+| GET | `/api/routing/job/:code` | ดูใบงานด้วยรหัสลับ |
 
 ## ตรวจสอบระบบ
 
@@ -139,6 +145,8 @@ GET /api/customer/nearby?latitude=16.2435&longitude=103.2542
 ```
 
 ระบบจะแสดงลูกค้าที่อยู่ภายในระยะ 1 กิโลเมตร พร้อมฟิลด์ `distance_km`
+
+พิกัดต้องเป็นตัวเลขและอยู่ในช่วง latitude -90 ถึง 90 และ longitude -180 ถึง 180
 
 ### แก้ไขลูกค้า
 
@@ -228,6 +236,8 @@ GET /api/order/nearby?latitude=16.2435&longitude=103.2542
 
 ต้องส่ง query ทั้ง `latitude` และ `longitude` เป็นตัวเลข
 
+ผลลัพธ์จำกัดเฉพาะออเดอร์ `pending` หรือ `ready` ภายใน 2 กิโลเมตร
+
 ### แก้ไขออเดอร์
 
 ```http
@@ -269,6 +279,10 @@ GET /api/rider
 
 Response จะเป็น array ของข้อมูลจากตาราง `RIDERS`
 
+การเพิ่มไรเดอร์ใช้ `POST /api/rider` พร้อม `display_name`, `phone` และ optional `is_available` (boolean)
+แก้ไขด้วย `PUT /api/rider/:id` โดยส่งเฉพาะฟิลด์ `display_name`, `phone` หรือ `is_available` ที่ต้องการเปลี่ยน
+ลบด้วย `DELETE /api/rider/:id`
+
 ## Routing API
 
 ### ดูแผนเส้นทางล่าสุด
@@ -286,6 +300,40 @@ GET /api/routing/latest
 ```
 
 ถ้ามีแผน ระบบจะคืนข้อมูลแผนล่าสุดไว้ในฟิลด์ `active_plan`
+
+### คำนวณแผนร่าง
+
+```http
+POST /api/routing/calculate
+Content-Type: application/json
+```
+
+ส่ง `planned_departure` เป็น `HH:mm` (ใช้วันที่ปัจจุบัน) หรือ `YYYY-MM-DD HH:mm` ได้ หากไม่ส่งจะใช้ 11:30 น.
+ระบบจัดออเดอร์ `pending`/`ready` ให้ไรเดอร์ที่พร้อม โดยไม่เกิน 3 จุดต่อคน และเลือกจุดถัดไปที่ใกล้ที่สุดจากจุดปัจจุบัน
+แผนคำนวณระยะด้วย Haversine เส้นตรง ความเร็ว 30 กม./ชม. และเวลาจอด 4 นาทีต่อจุด จึงเป็นค่าประมาณ ไม่ใช่เส้นทางถนนจริง
+
+ค่าใช้จ่ายประมาณการต่อไรเดอร์ = 15 บาท + ระยะทางรวม (กม.) × จำนวนกล่องที่รับ × 2 บาท
+รายรับใช้ 65 บาท/กล่อง ต้นทุนอาหารใช้ 40 บาท/กล่อง กำไรประมาณการ = รายรับ − ต้นทุนอาหาร − ค่าจัดส่ง
+Response มี `summary`, `routes`, ลำดับจุดส่ง, เวลาโดยประมาณ และรายการ `unassigned_order_ids`
+
+### ยืนยันแผนและสร้างใบงาน
+
+```http
+POST /api/routing/commit
+Content-Type: application/json
+```
+
+รับ `planned_departure` แบบเดียวกับ calculate ระบบปฏิเสธด้วย `409` หากจัดออเดอร์ไม่ครบ ไม่มีออเดอร์ หรือคาดว่าจะส่งหลัง 12:30 น.
+เมื่อสำเร็จจะบันทึก `ROUTING_RUNS`, `ROUTES`, `ROUTE_STOPS` และเปลี่ยนสถานะออเดอร์เป็น `assigned` ภายใน transaction
+Response `201` คืน `active_plan` และ `rider_job_codes` สำหรับส่งให้ไรเดอร์ เก็บรหัสงานไว้ให้ปลอดภัย: ฐานข้อมูลบันทึกเฉพาะ hash ของรหัส
+
+### ดูใบงานของไรเดอร์
+
+```http
+GET /api/routing/job/:code
+```
+
+ใช้ job code ที่ได้จากการยืนยันแผน Response มีชื่อไรเดอร์ จำนวนกล่อง และจุดส่งเรียงตามลำดับพร้อมพิกัด
 
 ## รูปแบบ Error
 

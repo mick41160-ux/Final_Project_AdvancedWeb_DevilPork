@@ -15,7 +15,7 @@
                     </svg>
 
                    
-                    <input type="text" placeholder="ค้นหาชื่อ เบอร์โทร หรือเลขรายการ"
+                    <input type="search" placeholder="ค้นหาชื่อ เบอร์โทร หรือเลขรายการ" [(ngModel)]="searchTerm"
                         class="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:border-blue-400 transition-colors" />
 
                 </div>
@@ -45,21 +45,18 @@
                     </thead>
 
                     <tbody class="bg-white divide-y divide-gray-200">
-                        <!-- <tr *ngFor="let order of orders"> -->
+                        @if (loading) { <tr><td colspan="5" class="px-6 py-6 text-sm text-gray-500">กำลังโหลดข้อมูลลูกค้า...</td></tr> }
+                        @else if (error) { <tr><td colspan="5" class="px-6 py-6 text-sm text-red-600">{{ error }} <button class="ml-2 underline" (click)="loadCustomers()">ลองอีกครั้ง</button></td></tr> }
+                        @else if (filteredCustomers.length === 0) { <tr><td colspan="5" class="px-6 py-6 text-sm text-gray-500">ไม่พบข้อมูลลูกค้า</td></tr> }
+                        @else { @for (customer of filteredCustomers; track customer.id) {
                         <tr>
-                            <td class="px-6 text-xs py-4 whitespace-nowrap">ID-1</td>
-                            <td class="px-6 text-xs py-4 whitespace-nowrap">พิมพ์ชนก ใจดี</td>
-                            <td class="px-6 text-xs py-4 whitespace-nowrap">10.250.24.21</td>
-                            <td class="px-6 text-xs py-4 whitespace-nowrap">หอพักบ้านสวน · ท่าขอนยาง</td>
-                            <td>
-                                <button class=" text-xs py-4 whitespace-nowrap"
-                                    (click)="editOrder($event)">แก้ไข</button>
-                                <button class="pl-3 text-xs py-4 whitespace-nowrap"
-                                    (click)="deleteOrder($event)">ลบ</button>
-                            </td>
+                            <td class="px-6 text-xs py-4 whitespace-nowrap">ID-{{ customer.id }}</td>
+                            <td class="px-6 text-xs py-4 whitespace-nowrap">{{ customer.first_name }} {{ customer.last_name }}<br><span class="text-gray-400">{{ customer.phone }}</span></td>
+                            <td class="px-6 text-xs py-4 whitespace-nowrap">{{ customer.latitude }}, {{ customer.longitude }}</td>
+                            <td class="px-6 text-xs py-4">{{ customer.address }}</td>
+                            <td class="px-6 text-xs py-4 whitespace-nowrap">—</td>
                         </tr>
-                        <!-- </tr> -->
-
+                        } }
                     </tbody>
                 </table>
             </div>

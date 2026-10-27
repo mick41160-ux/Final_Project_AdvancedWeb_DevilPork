@@ -1,5 +1,5 @@
 import express from "express";
-import { conn } from "../../dbconnect";
+import { conn } from "../../db";
 export const router = express.Router();
 router.get("/", (_q, r) => r.json({ name: "Final Web Project API" }));
 

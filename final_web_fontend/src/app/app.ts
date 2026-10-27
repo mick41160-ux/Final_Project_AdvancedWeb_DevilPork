@@ -8,5 +8,5 @@ import { Header } from './header/header';
   styleUrl: './app.css'
 })
 export class App {
-  protected readonly title = signal('final_project');
+  protected readonly title = signal('final_web_fontend');
 }
