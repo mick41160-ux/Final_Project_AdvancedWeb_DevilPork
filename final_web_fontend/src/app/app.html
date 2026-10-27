@@ -1,3 +1,6 @@
+@if (isLoginPage() || isRiderOrderPage()) {
+  <router-outlet></router-outlet>
+} @else {
 <div class="flex min-h-screen bg-gray-100 text-gray-800 min-w-screen">
   <div class="w-64 bg-white border-r border-gray-200 p-5 shrink-0 shadow-sm mb-6 h-screen fixed">
     <app-header></app-header>
@@ -6,3 +9,5 @@
     <router-outlet></router-outlet>
   </div>
 </div>
+}
+  

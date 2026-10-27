@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { ApiService, DeliveryOrder } from '../api.service';
 @Component({
   imports: [FormsModule],
@@ -10,6 +11,7 @@ import { ApiService, DeliveryOrder } from '../api.service';
 export class Order {
   private readonly api = inject(ApiService);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly route = inject(ActivatedRoute);
   orders: DeliveryOrder[] = [];
   loading = true;
   error = '';
@@ -19,7 +21,10 @@ export class Order {
   };
   readonly statuses: DeliveryOrder['status'][] = ['pending', 'ready', 'assigned', 'delivered', 'cancelled'];
 
-  constructor() { this.loadOrders(); }
+  constructor() {
+    this.searchTerm = this.route.snapshot.queryParamMap.get('order') ?? '';
+    this.loadOrders();
+  }
 
   get filteredOrders(): DeliveryOrder[] {
     const term = this.searchTerm.trim().toLocaleLowerCase();

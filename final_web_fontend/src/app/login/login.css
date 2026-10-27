@@ -1,0 +1,27 @@
+:host { display: block; min-height: 100vh; }
+
+.login-page { display: grid; min-height: 100vh; place-items: center; padding: 24px; background: #f3f4f6; color: #1f2937; }
+.login-card { width: min(100%, 400px); padding: 28px; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 4px 12px rgb(0 0 0 / 8%); }
+.brand { display: flex; align-items: center; gap: 12px; margin-bottom: 30px; }
+.brand img { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; }
+.brand strong, .brand span { display: block; }
+.brand strong { font-size: 16px; }
+.brand span { margin-top: 2px; color: #6b7280; font-size: 12px; }
+.heading h1 { margin: 0; font-size: 26px; }
+.heading p { margin: 8px 0 22px; color: #6b7280; font-size: 13px; }
+.role-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 24px; }
+.role-tabs button { padding: 10px; border: 1px solid #d1d5db; border-radius: 7px; background: #fff; color: #4b5563; cursor: pointer; font: inherit; font-size: 14px; }
+.role-tabs button.active { border-color: #2563eb; background: #eff6ff; color: #1d4ed8; font-weight: 600; }
+form { display: flex; flex-direction: column; }
+label { margin: 0 0 7px; color: #374151; font-size: 13px; font-weight: 600; }
+label:not(:first-child) { margin-top: 18px; }
+input { box-sizing: border-box; width: 100%; height: 42px; padding: 0 12px; border: 1px solid #d1d5db; border-radius: 7px; color: #1f2937; font: inherit; font-size: 14px; outline: 0; }
+input:focus, .password-field:focus-within { border-color: #2563eb; box-shadow: 0 0 0 3px #dbeafe; }
+input.invalid, .password-field.invalid { border-color: #dc2626; }
+.password-field { display: flex; height: 42px; border: 1px solid #d1d5db; border-radius: 7px; overflow: hidden; }
+.password-field input { border: 0; }
+.password-field button { border: 0; border-left: 1px solid #e5e7eb; background: #fff; color: #4b5563; cursor: pointer; padding: 0 12px; font-size: 12px; }
+.error { margin-top: 6px; color: #dc2626; font-size: 12px; }
+.submit { height: 42px; margin-top: 24px; border: 0; border-radius: 7px; background: #2563eb; color: #fff; cursor: pointer; font: inherit; font-size: 14px; font-weight: 600; }
+.submit:hover { background: #1d4ed8; }
+@media (max-width: 480px) { .login-page { padding: 16px; } .login-card { padding: 22px; } }

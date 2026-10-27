@@ -1,0 +1,24 @@
+<main class="login-page">
+  <section class="login-card">
+    <div class="brand"><img src="/logo.jpg" alt="Devil Pork" /><div><strong>ส่งด่วนมื้อเที่ยง</strong><span>ระบบจัดการร้านและการจัดส่ง</span></div></div>
+    <div class="heading"><h1>เข้าสู่ระบบ</h1><p>{{ selectedRole === 'store' ? 'สำหรับจัดการร้านค้าและออเดอร์' : 'กรอกเลขออเดอร์เพื่อดูข้อมูลงานจัดส่ง' }}</p></div>
+    <div class="role-tabs" role="group" aria-label="เลือกประเภทบัญชี">
+      <button type="button" [class.active]="selectedRole === 'store'" (click)="selectRole('store')">ร้านค้า</button>
+      <button type="button" [class.active]="selectedRole === 'rider'" (click)="selectRole('rider')">ไรเดอร์</button>
+    </div>
+    <form (ngSubmit)="login()" novalidate>
+      @if (selectedRole === 'store') {
+        <label for="email">อีเมล</label><input id="email" name="email" type="email" [(ngModel)]="email" placeholder="shop@devilpork.com" autocomplete="email" [class.invalid]="submitted && !email" required />
+        @if (submitted && !email) { <small class="error">กรุณากรอกอีเมล</small> }
+        <label for="password">รหัสผ่าน</label>
+        <div class="password-field" [class.invalid]="submitted && !password"><input id="password" name="password" [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" placeholder="กรอกรหัสผ่าน" autocomplete="current-password" required /><button type="button" (click)="showPassword = !showPassword">{{ showPassword ? 'ซ่อน' : 'แสดง' }}</button></div>
+        @if (submitted && !password) { <small class="error">กรุณากรอกรหัสผ่าน</small> }
+        <button class="submit" type="submit">เข้าสู่ระบบร้านค้า</button>
+      } @else {
+        <label for="orderNumber">เลขออเดอร์</label><input id="orderNumber" name="orderNumber" type="text" [(ngModel)]="orderNumber" placeholder="เช่น 001" autocomplete="off" [class.invalid]="submitted && !orderNumber" required />
+        @if (submitted && !orderNumber) { <small class="error">กรุณากรอกเลขออเดอร์</small> }
+        <button class="submit" type="submit">ค้นหาออเดอร์</button>
+      }
+    </form>
+  </section>
+</main>

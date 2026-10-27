@@ -5,9 +5,11 @@ import {Order} from './order/order';
 import {Mgrider} from './mgrider/mgrider';
 import {Porp} from './porp/porp';
 import {Distace} from './distace/distace';
+import {Login} from './login/login';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'store', pathMatch: 'full' },
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  { path: 'login', component: Login },
   { path: 'store', component: StoreComponent },
   { path: 'rider', component: RiderComponent },
   { path: 'order', component: Order},
