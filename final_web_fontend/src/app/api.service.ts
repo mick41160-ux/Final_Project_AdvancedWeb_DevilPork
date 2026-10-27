@@ -33,19 +33,20 @@ export interface Rider {
   is_available: boolean | number;
 }
 
-// Use the local API while developing locally. Production deployments can set
-// window.__APP_CONFIG__.apiUrl before Angular starts to provide their API URL.
+// Set API_URL in the active Angular build configuration to point at another API.
+import { environment } from '../environments/environment';
+
+// A runtime override is useful when one compiled frontend is deployed to
+// multiple environments without rebuilding it.
 declare global {
   interface Window {
     __APP_CONFIG__?: { apiUrl?: string };
   }
 }
 
-const isLocal = typeof window !== 'undefined'
-  && ['localhost', '127.0.0.1'].includes(window.location.hostname);
 const API_URL = typeof window !== 'undefined' && window.__APP_CONFIG__?.apiUrl
   ? window.__APP_CONFIG__.apiUrl.replace(/\/$/, '')
-  : isLocal ? 'http://localhost:3000' : 'https://finalwebprojectapi.vercel.app';
+  : environment.apiUrl.replace(/\/$/, '');
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
