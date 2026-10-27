@@ -33,20 +33,9 @@ export interface Rider {
   is_available: boolean | number;
 }
 
-// Set API_URL in the active Angular build configuration to point at another API.
 import { environment } from '../environments/environment';
 
-// A runtime override is useful when one compiled frontend is deployed to
-// multiple environments without rebuilding it.
-declare global {
-  interface Window {
-    __APP_CONFIG__?: { apiUrl?: string };
-  }
-}
-
-const API_URL = typeof window !== 'undefined' && window.__APP_CONFIG__?.apiUrl
-  ? window.__APP_CONFIG__.apiUrl.replace(/\/$/, '')
-  : environment.apiUrl.replace(/\/$/, '');
+const API_URL = environment.apiUrl.replace(/\/$/, '');
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {

@@ -7,6 +7,7 @@ import type { PoolConnection } from "mysql2/promise";
 export const router = express.Router();
 
 const DEPOT = { latitude: 16.2468, longitude: 103.2514 };
+const SERVICE_RADIUS_KM = 3;
 const DEFAULT_DEPARTURE = "11:30";
 const RIDER_FEE = 15;
 const COST_PER_KM_PER_BOX = 2;
@@ -187,13 +188,19 @@ async function calculatePlan(plannedDeparture: unknown) {
       error: "planned_departure must use HH:mm or YYYY-MM-DD HH:mm format",
     } as const;
 
-  const [orderRows] = await conn.query<ReadyOrder[]>(
+  const [allReadyOrders] = await conn.query<ReadyOrder[]>(
     `SELECT o.id, o.customer_id, o.box_count, c.first_name, c.last_name, c.phone,
       c.address, c.latitude, c.longitude
      FROM ORDERS o JOIN CUSTOMERS c ON c.id = o.customer_id
      WHERE o.status IN ('pending', 'ready')
      ORDER BY o.id`,
   );
+  // Only plan deliveries in the restaurant's Maha Sarakham service area.
+  // Nearby customers from other provinces must not be mixed into this run.
+  const orderRows = allReadyOrders.filter(
+    (order) => distanceKm(DEPOT, order) <= SERVICE_RADIUS_KM,
+  );
+  const outsideServiceAreaOrderCount = allReadyOrders.length - orderRows.length;
   const [riderRows] = await conn.query<AvailableRider[]>(
     "SELECT id, display_name, phone FROM RIDERS WHERE is_available = TRUE ORDER BY id",
   );
@@ -230,12 +237,14 @@ async function calculatePlan(plannedDeparture: unknown) {
         speed_kmh: SPEED_KMH,
         stop_minutes: STOP_MINUTES,
         max_stops_per_rider: 3,
+        service_radius_km: SERVICE_RADIUS_KM,
         rider_fee: RIDER_FEE,
         cost_per_km_per_box: COST_PER_KM_PER_BOX,
       },
       summary: {
         order_count: assignedOrderIds.size,
         total_order_count: orderRows.length,
+        outside_service_area_order_count: outsideServiceAreaOrderCount,
         unassigned_order_ids: orderRows
           .filter((order) => !assignedOrderIds.has(Number(order.id)))
           .map((order) => Number(order.id)),
