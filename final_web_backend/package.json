@@ -5,6 +5,7 @@
   "main": "dist/server.js",
   "scripts": {
     "build": "tsc",
+    "vercel-build": "npm run build",
     "start": "node dist/server.js",
     "dev": "ts-node-dev --respawn --transpile-only server.ts"
   },
