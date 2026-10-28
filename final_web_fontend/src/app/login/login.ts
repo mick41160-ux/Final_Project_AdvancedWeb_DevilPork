@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../api.service';
 
@@ -19,7 +19,6 @@ export class Login {
   riderError = '';
 
   private readonly api = inject(ApiService);
-
   constructor(private readonly router: Router) {}
 
   selectRole(role: 'store' | 'rider'): void {
@@ -28,23 +27,20 @@ export class Login {
     this.riderError = '';
   }
 
-  login(): void {
+  login(form: NgForm): void {
     this.submitted = true;
-    const storeCredentialsComplete = this.email && this.password;
-    const riderCredentialsComplete = this.riderId;
+    if (form.invalid) return;
 
-    if (this.selectedRole === 'store' && storeCredentialsComplete) {
+    if (this.selectedRole === 'store') {
       this.router.navigate(['/store']);
       return;
     }
 
-    if (this.selectedRole !== 'rider' || !riderCredentialsComplete) return;
     const riderId = Number(this.riderId);
     if (!Number.isSafeInteger(riderId) || riderId < 1) {
       this.riderError = 'กรุณากรอกรหัสไรเดอร์เป็นตัวเลข';
       return;
     }
-
     this.riderError = '';
     this.api.getRiders().subscribe({
       next: (riders) => {
