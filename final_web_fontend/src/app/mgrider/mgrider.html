@@ -32,14 +32,7 @@
                                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
                                 สถานะ
                             </th>
-                            <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
-                                งานที่ได้รับ / ความจุ
-                            </th>
-                            <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
-                                จัดการ
-                            </th>
+                            
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -51,8 +44,6 @@
                             <td class="px-6 text-xs py-4 whitespace-nowrap">ID-{{ rider.id }}</td>
                             <td class="px-6 text-xs py-4 whitespace-nowrap">{{ rider.display_name }}<br><span class="text-gray-400">{{ rider.phone }}</span></td>
                             <td class="px-6 text-xs py-4 whitespace-nowrap">{{ isAvailable(rider) ? 'พร้อมรับงาน' : 'ไม่พร้อม' }}</td>
-                            <td class="px-6 text-xs py-4 whitespace-nowrap">—</td>
-                            <td class="px-6 text-xs py-4 whitespace-nowrap">—</td>
                         </tr>
                         } }
                     </tbody>

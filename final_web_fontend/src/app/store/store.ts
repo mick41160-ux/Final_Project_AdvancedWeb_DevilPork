@@ -75,7 +75,14 @@ export class StoreComponent implements AfterViewInit, OnDestroy {
         radius: 3000
       }).addTo(this.mapLayer);
 
-      L.marker(depot).addTo(this.mapLayer).bindPopup('จุดเริ่มต้น: ครัว');
+      const depotIcon = L.divIcon({
+       className: 'custom-depot-marker',
+        html: `<div style="background-color: #1e3a8a; color: white; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 12px; border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3); text-align: center; white-space: nowrap;">ครัว</div>`,
+        iconSize: [40, 24],
+        iconAnchor: [20, 12] 
+      });
+
+L.marker(depot, { icon: depotIcon }).addTo(this.mapLayer).bindPopup('จุดเริ่มต้น: ครัว');
 
       const today = new Date();
       const date = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
