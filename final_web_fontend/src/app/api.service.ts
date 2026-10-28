@@ -165,8 +165,14 @@ export class ApiService {
     plannedDeparture: string,
     speedKmh?: number,
     stopMinutes?: number,
-  ): Observable<{ active_plan: RoutingPlan }> {
-    return this.http.post<{ active_plan: RoutingPlan }>(`${API_URL}/api/routing/commit`, {
+  ): Observable<{
+    active_plan: RoutingPlan;
+    rider_job_codes: Array<{ rider_id: number; job_code: string }>;
+  }> {
+    return this.http.post<{
+      active_plan: RoutingPlan;
+      rider_job_codes: Array<{ rider_id: number; job_code: string }>;
+    }>(`${API_URL}/api/routing/commit`, {
       planned_departure: plannedDeparture,
       speed_kmh: speedKmh,
       stop_minutes: stopMinutes,

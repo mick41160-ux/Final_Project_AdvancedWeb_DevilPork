@@ -97,6 +97,7 @@ export class Distace implements AfterViewInit, OnDestroy {
   readonly loading = signal(false);
   readonly committing = signal(false);
   readonly commitMessage = signal<string | null>(null);
+  readonly assignedRiders = signal<Array<{ riderId: number; name: string; stops: number }>>([]);
   readonly error = signal<string | null>(null);
   readonly routes = signal<RiderView[]>([]);
   readonly summary = signal({
@@ -251,14 +252,25 @@ export class Distace implements AfterViewInit, OnDestroy {
 
     this.committing.set(true);
     this.commitMessage.set(null);
+    this.assignedRiders.set([]);
     this.error.set(null);
     try {
       const today = new Date();
       const date = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-      await firstValueFrom(
+      const { active_plan: savedPlan } = await firstValueFrom(
         this.api.commitRoute(`${date} ${this.departure()}`, this.speedKmh(), this.stopMinutes()),
       );
-      this.commitMessage.set('บันทึกแผนแล้ว ไรเดอร์จะเห็นเฉพาะออเดอร์ที่ได้รับมอบหมายหลังล็อกอิน');
+      const assignments = savedPlan.routes.map((route) => ({
+        riderId: route.rider_id,
+        name: route.rider_name,
+        stops: route.stops.length,
+      }));
+      this.assignedRiders.set(assignments);
+      this.commitMessage.set(
+        assignments.length
+          ? `บันทึกและมอบหมายเส้นทางให้ไรเดอร์ ${assignments.length} คนแล้ว แต่ละคนจะเห็นเฉพาะงานของตนเมื่อล็อกอิน`
+          : 'บันทึกแผนแล้ว แต่ไม่มีเส้นทางที่มอบหมายให้ไรเดอร์',
+      );
     } catch (e) {
       console.error('Route commit failed', e);
       this.error.set('บันทึกแผนจัดส่งไม่สำเร็จ กรุณาลองอีกครั้ง');

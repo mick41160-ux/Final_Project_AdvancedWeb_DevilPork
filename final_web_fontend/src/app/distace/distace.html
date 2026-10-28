@@ -88,6 +88,14 @@
             @if (commitMessage()) {
             <div class="mb-2 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs px-3 py-2">{{ commitMessage() }}</div>
             }
+            @if (assignedRiders().length > 0) {
+            <div class="mb-2 rounded-md bg-emerald-50 border border-emerald-200 px-3 py-2 text-xs text-emerald-800">
+                <p class="font-semibold mb-1">งานที่บันทึกให้ไรเดอร์</p>
+                @for (rider of assignedRiders(); track rider.riderId) {
+                <p>{{ rider.name }} · {{ rider.stops }} จุดส่ง</p>
+                }
+            </div>
+            }
             @if (summary().fallbackCount > 0) {
             <div class="mb-2 rounded-md bg-amber-50 border border-amber-200 text-amber-700 text-xs px-3 py-2">
                 ดึงเส้นทางถนนไม่ได้ {{ summary().fallbackCount }} เส้น จึงแสดงเป็นเส้นประตรง และใช้ระยะทางเส้นตรงแทน
