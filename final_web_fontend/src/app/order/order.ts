@@ -16,11 +16,13 @@ export class Order implements OnDestroy {
   orders: DeliveryOrder[] = [];
   loading = true;
   error = '';
+  actionError = '';
   searchTerm = '';
   riderId: number | null = null;
+  private updatingOrderIds = new Set<number>();
   private riderStopSequences = new Map<number, number>();
   readonly statusLabels: Record<DeliveryOrder['status'], string> = {
-    pending: 'รอดำเนินการ', ready: 'พร้อมจัดส่ง', assigned: 'มอบหมายแล้ว', delivered: 'ส่งสำเร็จ', cancelled: 'ยกเลิก',
+    pending: 'รอดำเนินการ', ready: 'พร้อมจัดส่ง', assigned: 'มอบหมายแล้ว', delivered: 'ส่งสำเร็จแล้ว', cancelled: 'ยกเลิก',
   };
   readonly statuses: DeliveryOrder['status'][] = ['pending', 'ready', 'assigned', 'delivered', 'cancelled'];
 
@@ -91,6 +93,31 @@ export class Order implements OnDestroy {
     this.loading = false;
     this.error = 'Unable to load orders. Please check the API connection.';
     this.cdr.markForCheck();
+  }
+
+  isUpdating(orderId: number): boolean {
+    return this.updatingOrderIds.has(orderId);
+  }
+
+  markDelivered(order: DeliveryOrder): void {
+    if (this.riderId === null || order.status !== 'assigned' ||
+        this.isUpdating(order.id) || !this.riderStopSequences.has(order.id)) return;
+
+    this.actionError = '';
+    this.updatingOrderIds.add(order.id);
+    this.cdr.markForCheck();
+    this.api.updateOrder(order.id, { status: 'delivered' }).subscribe({
+      next: () => {
+        order.status = 'delivered';
+        this.updatingOrderIds.delete(order.id);
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.updatingOrderIds.delete(order.id);
+        this.actionError = 'บันทึกสถานะออเดอร์ #' + order.id + ' ไม่สำเร็จ กรุณาลองอีกครั้ง';
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   updateStatus(order: DeliveryOrder, status: DeliveryOrder['status']): void {

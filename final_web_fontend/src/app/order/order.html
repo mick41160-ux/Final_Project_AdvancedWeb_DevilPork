@@ -18,9 +18,10 @@
                         class="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:border-blue-400 transition-colors" />
 
                 </div>
+            @if (actionError) { <p class="px-5 py-2 text-sm text-red-600" role="alert">{{ actionError }}</p> }
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50" [class.rider-mode]="riderId !== null">
+                    <thead class="bg-gray-50">
                         <tr>
                             @if (riderId !== null) {
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">ลำดับส่ง</th>
@@ -43,16 +44,19 @@
                                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
                                 สถานะ
                             </th>
+                            @if (riderId !== null) {
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">ยืนยันการส่ง</th>
+                            }
                             <th scope="col"
                                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
-                                จัดการ
+                                {{ riderId !== null ? 'แผนที่' : 'จัดการ' }}
                             </th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        @if (loading) { <tr><td colspan="6" class="px-6 py-6 text-sm text-gray-500">กำลังโหลดข้อมูลออเดอร์...</td></tr> }
-                        @else if (error) { <tr><td colspan="6" class="px-6 py-6 text-sm text-red-600">{{ error }} <button class="ml-2 underline" (click)="loadOrders()">ลองอีกครั้ง</button></td></tr> }
-                        @else if (filteredOrders.length === 0) { <tr><td colspan="6" class="px-6 py-6 text-sm text-gray-500">ไม่พบข้อมูลออเดอร์</td></tr> }
+                        @if (loading) { <tr><td [attr.colspan]="riderId !== null ? 8 : 6" class="px-6 py-6 text-sm text-gray-500">กำลังโหลดข้อมูลออเดอร์...</td></tr> }
+                        @else if (error) { <tr><td [attr.colspan]="riderId !== null ? 8 : 6" class="px-6 py-6 text-sm text-red-600">{{ error }} <button class="ml-2 underline" (click)="loadOrders()">ลองอีกครั้ง</button></td></tr> }
+                        @else if (filteredOrders.length === 0) { <tr><td [attr.colspan]="riderId !== null ? 8 : 6" class="px-6 py-6 text-sm text-gray-500">ไม่พบข้อมูลออเดอร์</td></tr> }
                         @else { @for (order of filteredOrders; track order.id) {
                         <tr>
                             @if (riderId !== null) {
@@ -67,6 +71,19 @@
                                 <select [ngModel]="order.status" (ngModelChange)="updateStatus(order, $event)" [name]="'status-' + order.id" class="border rounded px-2 py-1 text-xs">
                                     @for (status of statuses; track status) { <option [value]="status">{{ statusLabels[status] }}</option> }
                                 </select>
+                            </td>
+                            } @else {
+                            <td class="px-6 text-xs py-4 whitespace-nowrap">{{ statusLabels[order.status] }}</td>
+                            }
+                            @if (riderId !== null) {
+                            <td class="px-6 text-xs py-4 whitespace-nowrap">
+                                @if (order.status === 'assigned') {
+                                <button type="button" class="text-green-700 hover:underline disabled:opacity-50" [disabled]="isUpdating(order.id)" (click)="markDelivered(order)">{{ isUpdating(order.id) ? 'กำลังบันทึก...' : 'ได้ส่งสำเร็จแล้ว' }}</button>
+                                } @else if (order.status === 'delivered') {
+                                <span class="font-semibold text-green-700">ส่งสำเร็จแล้ว</span>
+                                } @else {
+                                <span class="text-gray-400">—</span>
+                                }
                             </td>
                             }
                             <td class="px-6 text-xs py-4 whitespace-nowrap">
