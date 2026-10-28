@@ -16,3 +16,6 @@ export const routes: Routes = [
   { path: 'distace', component: Distace},
   
 ];
+
+
+

@@ -33,3 +33,5 @@ return `{ "ok": true, "database": "mysql" }`.
 
 Do not commit `.env` or paste database credentials into source files. The
 local `.env.example` file lists the required variable names.
+
+
