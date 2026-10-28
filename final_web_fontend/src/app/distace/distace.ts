@@ -9,16 +9,17 @@ type LatLng = [number, number];
 const DEPOT: LatLng = [16.2468, 103.2514];
 
 export const RIDER_COLORS = [
+  '#dc2626',
   '#2563eb',
-  '#059669',
-  '#e11d48',
-  '#d97706',
-  '#7c3aed',
-  '#0891b2',
-  '#c026d3',
-  '#65a30d',
+  '#ca8a04',
+  '#9333ea',
+  '#0d9488',
+  '#f97316',
+  '#db2777',
   '#475569',
-  '#ea580c',
+  '#84cc16',
+  '#0284c7',
+  '#78716c',
 ];
 
 export interface RiderView {
