@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, inject, signal } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import * as L from 'leaflet';
@@ -108,6 +108,10 @@ export class Distace implements AfterViewInit, OnDestroy {
     food: 0,
     delivery: 0,
     fallbackCount: 0,
+  });
+  readonly profit = computed(() => {
+    const s = this.summary();
+    return s.revenue - s.food - s.delivery;
   });
   readonly meta = signal({ totalOrders: 0, assigned: 0, unassigned: 0, deadline: '12:30' });
   readonly expandedRider = signal<number | null>(null);

@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService, DeliveryOrder } from '../api.service';
@@ -8,7 +8,8 @@ import { ApiService, DeliveryOrder } from '../api.service';
   styleUrl: './order.css',
   templateUrl: './order.html',
 })
-export class Order {
+export class Order implements OnDestroy {
+  private refreshTimer?: ReturnType<typeof setInterval>;
   private readonly api = inject(ApiService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly route = inject(ActivatedRoute);
@@ -30,6 +31,14 @@ export class Order {
       this.riderId = queryRiderId;
     }
     this.loadOrders();
+    if (this.riderId !== null) {
+      // ไรเดอร์: รีเฟรชแผนล่าสุดอัตโนมัติทุก 15 วินาที
+      this.refreshTimer = setInterval(() => this.loadOrders(true), 15000);
+    }
+  }
+
+  ngOnDestroy(): void {
+    clearInterval(this.refreshTimer);
   }
 
   get filteredOrders(): DeliveryOrder[] {
@@ -43,8 +52,8 @@ export class Order {
     return this.riderStopSequences.get(orderId) ?? null;
   }
 
-  loadOrders(): void {
-    this.loading = true;
+  loadOrders(silent = false): void {
+    if (!silent) this.loading = true;
     if (this.riderId !== null) {
       this.loadRiderOrders(this.riderId);
       return;
