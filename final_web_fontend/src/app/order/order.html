@@ -78,7 +78,9 @@
                             @if (riderId !== null) {
                             <td class="px-6 text-xs py-4 whitespace-nowrap">
                                 @if (order.status === 'assigned') {
-                                <button type="button" class="text-green-700 hover:underline disabled:opacity-50" [disabled]="isUpdating(order.id)" (click)="markDelivered(order)">{{ isUpdating(order.id) ? 'กำลังบันทึก...' : 'ได้ส่งสำเร็จแล้ว' }}</button>
+                                <button type="button" class="text-green-700 hover:underline disabled:opacity-50" 
+                                [disabled]="isUpdating(order.id)" 
+                                (click)="markDelivered(order)">{{ isUpdating(order.id) ? 'กำลังบันทึก...' : 'ได้ส่งสำเร็จแล้ว' }}</button>
                                 } @else if (order.status === 'delivered') {
                                 <span class="font-semibold text-green-700">ส่งสำเร็จแล้ว</span>
                                 } @else {

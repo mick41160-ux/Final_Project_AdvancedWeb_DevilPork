@@ -23,7 +23,7 @@ export class RiderComponent {
   get filteredCustomers(): Customer[] {
     const term = this.searchTerm.trim().toLocaleLowerCase();
     return this.customers.filter((customer) =>
-      `${customer.id} ${customer.first_name} ${customer.last_name} ${customer.phone}`.toLocaleLowerCase().includes(term),
+      `${customer.id}`.toLocaleLowerCase().includes(term),
     );
   }
 
